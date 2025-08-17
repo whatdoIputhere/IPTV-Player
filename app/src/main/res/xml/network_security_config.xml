@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Allow HTTP traffic for all domains (for IPTV compatibility) -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </base-config>
+    
+    <!-- Specific domain configurations for common IPTV providers -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">stream.example.com</domain>
+        <!-- Add more specific IPTV domains here if needed -->
+    </domain-config>
+</network-security-config>
