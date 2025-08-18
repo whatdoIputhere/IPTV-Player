@@ -72,7 +72,8 @@ fun IPTVApp() {
                         uiState.selectedChannel?.let { channel ->
                             VideoPlayerScreen(
                                 channel = channel,
-                                onBackClick = { viewModel.clearSelectedChannel() }
+                                onBackClick = { viewModel.clearSelectedChannel() },
+                                orientationBeforeStream = uiState.orientationBeforeStream
                             )
                         }
                     }

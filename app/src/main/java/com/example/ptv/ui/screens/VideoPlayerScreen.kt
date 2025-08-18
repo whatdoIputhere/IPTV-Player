@@ -26,7 +26,8 @@ import com.google.android.exoplayer2.ui.PlayerView
 @Composable
 fun VideoPlayerScreen(
     channel: Channel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    orientationBeforeStream: Int? = null
 ) {
     val context = LocalContext.current
     val activity = context as? android.app.Activity
@@ -44,7 +45,27 @@ fun VideoPlayerScreen(
         onDispose { exoPlayer.release() }
     }
 
-    BackHandler(onBack = onBackClick)
+    // helper: restore orientation then unlock (allow system rotation)
+    fun restoreAndUnlock(prevConfig: Int?) {
+        prevConfig?.let { prev ->
+            val mapped = if (prev == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+                android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            } else {
+                android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            }
+            activity?.requestedOrientation = mapped
+            // clear the requestedOrientation after a short delay so rotation is not locked
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                activity?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            }, 300L)
+        }
+    }
+
+    BackHandler {
+        // Restore and unlock then navigate back
+        restoreAndUnlock(orientationBeforeStream)
+        onBackClick()
+    }
 
     var controlsVisible by remember { mutableStateOf(true) }
 
@@ -86,7 +107,11 @@ fun VideoPlayerScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
-                        onClick = onBackClick,
+                        onClick = {
+                            // Restore previous orientation (if available) then go back (and unlock)
+                            restoreAndUnlock(orientationBeforeStream)
+                            onBackClick()
+                        },
                         colors = IconButtonDefaults.iconButtonColors(contentColor = Color.White)
                     ) {
                         Icon(

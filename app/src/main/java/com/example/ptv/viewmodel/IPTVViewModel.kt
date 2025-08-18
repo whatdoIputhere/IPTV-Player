@@ -29,10 +29,10 @@ data class IPTVUiState(
     val xtreamConfigs: List<XtreamConfig> = emptyList(),
     val activeXtreamConfigId: Long? = null,
     val isTestingConnection: Boolean = false,
-    val testResult: String? = null
-    ,
+    val testResult: String? = null,
     val savedPlaylists: List<PlaylistConfig> = emptyList(),
-    val activePlaylistId: String? = null
+    val activePlaylistId: String? = null,
+    val orientationBeforeStream: Int? = null
 )
 
 enum class Screen {
@@ -260,6 +260,7 @@ class IPTVViewModel(application: Application) : AndroidViewModel(application) {
     
     fun selectChannel(channel: Channel) {
         _uiState.value = _uiState.value.copy(
+            orientationBeforeStream = this.getApplication<Application>().resources.configuration.orientation,
             selectedChannel = channel,
             currentScreen = Screen.VideoPlayer
         )
@@ -274,12 +275,9 @@ class IPTVViewModel(application: Application) : AndroidViewModel(application) {
     
     fun navigateToChannelList() {
         _uiState.value = _uiState.value.copy(currentScreen = Screen.ChannelList)
-        
-       
         viewModelScope.launch {
             val activeConfig = _uiState.value.xtreamConfigs.find { it.id == _uiState.value.activeXtreamConfigId }
             if (activeConfig != null && _uiState.value.channels.all { it.group.startsWith("Demo") }) {
-               
                 loadChannelsFromXtream(activeConfig)
             }
         }
@@ -434,6 +432,4 @@ class IPTVViewModel(application: Application) : AndroidViewModel(application) {
             loadChannelsFromXtream(activeConfig, forceRefresh = true)
         }
     }
-    
-   
 }
