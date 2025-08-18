@@ -21,13 +21,16 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -47,262 +50,278 @@ fun ChannelListScreen(
     onRefreshPlaylist: () -> Unit = {},
     onBackToCategories: () -> Unit = {}
 ) {
-    var categorySearchQuery by remember { mutableStateOf("") }
+    var categorySearchQuery by rememberSaveable { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-       
-        TopAppBar(
-            title = {
-                Text(
-                    text = "IPTV Player",
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            actions = {
-               
-                if (uiState.channels.isNotEmpty()) {
-                    IconButton(
-                        onClick = onRefreshPlaylist,
-                        enabled = !uiState.isLoading
-                    ) {
-                        Icon(
-                            Icons.Default.Refresh, 
-                            contentDescription = "Refresh Playlist",
-                            tint = if (uiState.isLoading) 
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                            else 
-                                MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-               
-                TextButton(
-                    onClick = onShowSavedPlaylists
-                ) {
-                    Text("Playlists")
-                }
-            }
-        )
-
-       
-        if (uiState.channels.isNotEmpty()) {
-           
-            val categories = remember(uiState.channels) {
-                val seenCategories = mutableSetOf<String>()
-                uiState.channels.mapNotNull { channel ->
-                    if (channel.group.isNotBlank() && seenCategories.add(channel.group)) {
-                        channel.group
-                    } else {
-                        null
-                    }
-                }
-            }
-
-            if (uiState.selectedCategory == null) {
-               
-                OutlinedTextField(
-                    value = categorySearchQuery,
-                    onValueChange = { categorySearchQuery = it },
-                    label = { Text("Search categories") },
-                    leadingIcon = {
-                        Icon(Icons.Default.Search, contentDescription = "Search")
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    singleLine = true
-                )
-                
-               
-                val filteredCategories = remember(categories, categorySearchQuery) {
-                    if (categorySearchQuery.isBlank()) {
-                        categories
-                    } else {
-                        categories.filter { category ->
-                            category.contains(categorySearchQuery, ignoreCase = true)
-                        }
-                    }
-                }
-                
-               
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(filteredCategories) { category ->
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(120.dp)
-                                .clickable { 
-                                    onCategorySelect(category) 
-                                },
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer
-                            ),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "IPTV Player",
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                actions = {
+                    if (uiState.channels.isNotEmpty()) {
+                        IconButton(
+                            onClick = onRefreshPlaylist,
+                            enabled = !uiState.isLoading
                         ) {
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier.fillMaxSize().padding(8.dp)
-                            ) {
-                                Text(
-                                    text = category,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
+                            Icon(
+                                Icons.Default.Refresh,
+                                contentDescription = "Refresh Playlist",
+                                tint = if (uiState.isLoading)
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                else
+                                    MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+
+                    TextButton(
+                        onClick = onShowSavedPlaylists
+                    ) {
+                        Text("Playlists")
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+
+            if (uiState.channels.isNotEmpty()) {
+
+                val categories = remember(uiState.channels) {
+                    val seenCategories = mutableSetOf<String>()
+                    uiState.channels.mapNotNull { channel ->
+                        if (channel.group.isNotBlank() && seenCategories.add(channel.group)) {
+                            channel.group
+                        } else {
+                            null
                         }
                     }
                 }
-                
-               
-                if (filteredCategories.isEmpty() && categorySearchQuery.isNotBlank()) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "No categories match your search",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                        )
-                    }
-                }
-            } else {
-               
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+
+                if (uiState.selectedCategory == null) {
+
                     OutlinedTextField(
-                        value = uiState.searchQuery,
-                        onValueChange = onSearchQueryChange,
-                        label = { Text("Search channels") },
+                        value = categorySearchQuery,
+                        onValueChange = { categorySearchQuery = it },
+                        label = { Text("Search categories") },
                         leadingIcon = {
                             Icon(Icons.Default.Search, contentDescription = "Search")
                         },
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
                         singleLine = true
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = { 
-                        categorySearchQuery = "" 
-                        onBackToCategories()
-                    }) {
-                        Text("Categories")
-                    }
-                }
-            }
-        }
 
-       
-        Box(modifier = Modifier.fillMaxSize()) {
-            when {
-                uiState.error != null -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "Error",
-                                style = MaterialTheme.typography.headlineSmall,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                            Text(
-                                text = uiState.error,
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(top = 8.dp)
-                            )
-                        }
-                    }
-                }
 
-                uiState.channels.isEmpty() && !uiState.isLoading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "No channels loaded",
-                                style = MaterialTheme.typography.headlineSmall
-                            )
-                            Text(
-                                text = "Load a playlist to get started",
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(top = 8.dp)
-                            )
-                            Button(
-                                onClick = onShowSavedPlaylists,
-                                modifier = Modifier.padding(top = 16.dp)
-                            ) {
-                                Text("Playlists")
+                    val filteredCategories by remember(categories, categorySearchQuery) {
+                        derivedStateOf {
+                            if (categorySearchQuery.isBlank()) {
+                                categories
+                            } else {
+                                categories.filter { category ->
+                                    category.contains(categorySearchQuery, ignoreCase = true)
+                                }
                             }
                         }
                     }
-                }
 
-                uiState.selectedCategory != null -> {
-                    val filteredChannels = uiState.channels.filter { it.group == uiState.selectedCategory }
-                        .filter { channel ->
-                            if (uiState.searchQuery.isBlank()) true
-                            else channel.name.contains(uiState.searchQuery, ignoreCase = true)
+
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(filteredCategories, key = { it }) { category ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(120.dp)
+                                    .clickable {
+                                        onCategorySelect(category)
+                                    },
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                                ),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+                            ) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier.fillMaxSize().padding(8.dp)
+                                ) {
+                                    Text(
+                                        text = category,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
                         }
-                    if (filteredChannels.isEmpty()) {
+                    }
+
+
+                    if (filteredCategories.isEmpty() && categorySearchQuery.isNotBlank()) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("No channels match your search in this category")
+                            Text(
+                                text = "No categories match your search",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            )
                         }
-                    } else {
-                        LazyColumn {
-                            items(filteredChannels) { channel ->
-                                ChannelItem(
-                                    channel = channel,
-                                    onChannelClick = onChannelClick
-                                )
-                            }
+                    }
+                } else {
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        OutlinedTextField(
+                            value = uiState.searchQuery,
+                            onValueChange = onSearchQueryChange,
+                            label = { Text("Search channels") },
+                            leadingIcon = {
+                                Icon(Icons.Default.Search, contentDescription = "Search")
+                            },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(onClick = {
+                            categorySearchQuery = ""
+                            onBackToCategories()
+                        }) {
+                            Text("Categories")
                         }
                     }
                 }
             }
 
-           
-            if (uiState.isLoading && (uiState.channels.isNotEmpty() || uiState.loadingStatus.isNotBlank())) {
-                LoadingOverlay(
-                    status = uiState.loadingStatus,
-                    progress = uiState.loadingProgress,
-                    hasContent = uiState.channels.isNotEmpty()
-                )
-            }
 
-           
-            if (uiState.isLoading && uiState.channels.isEmpty()) {
-                EnhancedLoadingScreen(
-                    status = uiState.loadingStatus,
-                    progress = uiState.loadingProgress
-                )
+            Box(modifier = Modifier.fillMaxSize()) {
+                when {
+                    uiState.error != null -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "Error",
+                                    style = MaterialTheme.typography.headlineSmall,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                                Text(
+                                    text = uiState.error,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.padding(top = 8.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    uiState.channels.isEmpty() && !uiState.isLoading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "No channels loaded",
+                                    style = MaterialTheme.typography.headlineSmall
+                                )
+                                Text(
+                                    text = "Load a playlist to get started",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.padding(top = 8.dp)
+                                )
+                                Button(
+                                    onClick = onShowSavedPlaylists,
+                                    modifier = Modifier.padding(top = 16.dp)
+                                ) {
+                                    Text("Playlists")
+                                }
+                            }
+                        }
+                    }
+
+                    uiState.selectedCategory != null -> {
+                        val filteredChannels by remember(
+                            uiState.channels,
+                            uiState.selectedCategory,
+                            uiState.searchQuery
+                        ) {
+                            derivedStateOf {
+                                uiState.channels.filter { channel ->
+                                    channel.group == uiState.selectedCategory && (uiState.searchQuery.isBlank() || channel.name.contains(
+                                        uiState.searchQuery,
+                                        ignoreCase = true
+                                    ))
+                                }
+                            }
+                        }
+                        if (filteredChannels.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("No channels match your search in this category")
+                            }
+                        } else {
+                            LazyColumn {
+                                items(filteredChannels, key = { it.name }) { channel ->
+                                    ChannelItem(
+                                        channel = channel,
+                                        onChannelClick = onChannelClick
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+
+                if (uiState.isLoading && (uiState.channels.isNotEmpty() || uiState.loadingStatus.isNotBlank())) {
+                    LoadingOverlay(
+                        status = uiState.loadingStatus,
+                        progress = uiState.loadingProgress,
+                        hasContent = uiState.channels.isNotEmpty()
+                    )
+                }
+
+
+                if (uiState.isLoading && uiState.channels.isEmpty()) {
+                    EnhancedLoadingScreen(
+                        status = uiState.loadingStatus,
+                        progress = uiState.loadingProgress
+                    )
+                }
             }
         }
+
+
     }
 
-   
 }
 
 @Composable
@@ -371,7 +390,7 @@ fun EnhancedLoadingScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
-                        contentDescription = null,
+                        contentDescription = "Loading",
                         modifier = Modifier
                             .size(48.dp)
                             .rotate(rotation),
@@ -393,10 +412,11 @@ fun EnhancedLoadingScreen(
                         LinearProgressIndicator(
                             progress = { progress },
                             modifier = Modifier
-                                .width(200.dp)
-                                .height(8.dp),
+                                                        .width(200.dp)
+                                                        .height(8.dp),
                             color = MaterialTheme.colorScheme.primary,
-                            trackColor = MaterialTheme.colorScheme.primaryContainer
+                            trackColor = MaterialTheme.colorScheme.primaryContainer,
+                            strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
@@ -474,7 +494,10 @@ fun LoadingOverlay(
                     CircularProgressIndicator(
                         progress = { progress },
                         modifier = Modifier.size(24.dp),
-                        strokeWidth = 3.dp
+                        color = ProgressIndicatorDefaults.circularColor,
+                        strokeWidth = 3.dp,
+                        trackColor = ProgressIndicatorDefaults.circularIndeterminateTrackColor,
+                        strokeCap = ProgressIndicatorDefaults.CircularDeterminateStrokeCap,
                     )
                 } else {
                     CircularProgressIndicator(
@@ -484,7 +507,7 @@ fun LoadingOverlay(
                 }
 
                 Text(
-                    text = if (status.isNotBlank()) status else "Loading from cache...",
+                    text = status.ifBlank { "Loading from cache..." },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
