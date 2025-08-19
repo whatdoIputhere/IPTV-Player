@@ -98,7 +98,8 @@ fun IPTVApp() {
                             onCategorySelect = { category -> viewModel.selectGroup(category) },
                             onShowSavedPlaylists = { viewModel.navigateToSavedPlaylists() },
                             onRefreshPlaylist = { viewModel.refreshCurrentPlaylist() },
-                            onBackToCategories = { viewModel.clearSelectedCategory() }
+                            onBackToCategories = { viewModel.clearSelectedCategory() },
+                            onSaveScroll = { index, offset -> viewModel.saveChannelListScroll(index, offset) }
                         )
                     }
                 }

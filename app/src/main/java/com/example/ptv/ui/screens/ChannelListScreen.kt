@@ -11,8 +11,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,6 +46,7 @@ import com.example.ptv.viewmodel.IPTVUiState
 fun ChannelListScreen(
     uiState: IPTVUiState,
     onChannelClick: (Channel) -> Unit,
+    onSaveScroll: (firstVisibleIndex: Int, firstVisibleScrollOffset: Int) -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onCategorySelect: (String) -> Unit,
     onShowSavedPlaylists: () -> Unit = {},
@@ -135,22 +138,30 @@ fun ChannelListScreen(
                     }
 
 
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
+                        val gridState = rememberLazyGridState(
+                            initialFirstVisibleItemIndex = uiState.channelListFirstVisibleIndex ?: 0,
+                            initialFirstVisibleItemScrollOffset = uiState.channelListFirstVisibleScrollOffset ?: 0
+                        )
+
+                        LazyVerticalGrid(
+                            state = gridState,
+                            columns = GridCells.Fixed(2),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
                         items(filteredCategories, key = { it }) { category ->
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(120.dp)
                                     .clickable {
-                                        onCategorySelect(category)
-                                    },
+                                                // save scroll position before navigating
+                                                onSaveScroll(gridState.firstVisibleItemIndex, gridState.firstVisibleItemScrollOffset)
+                                                onCategorySelect(category)
+                                            },
                                 colors = CardDefaults.cardColors(
                                     containerColor = MaterialTheme.colorScheme.primaryContainer
                                 ),
@@ -288,14 +299,23 @@ fun ChannelListScreen(
                                 Text("No channels match your search in this category")
                             }
                         } else {
-                            LazyColumn {
-                                items(filteredChannels, key = { it.name }) { channel ->
-                                    ChannelItem(
-                                        channel = channel,
-                                        onChannelClick = onChannelClick
-                                    )
+                                val listState = rememberLazyListState(
+                                    initialFirstVisibleItemIndex = uiState.channelListFirstVisibleIndex ?: 0,
+                                    initialFirstVisibleItemScrollOffset = uiState.channelListFirstVisibleScrollOffset ?: 0
+                                )
+
+                                LazyColumn(state = listState) {
+                                    items(filteredChannels, key = { it.name }) { channel ->
+                                        ChannelItem(
+                                            channel = channel,
+                                            onChannelClick = {
+                                                // save scroll position then navigate to channel
+                                                onSaveScroll(listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset)
+                                                onChannelClick(channel)
+                                            }
+                                        )
+                                    }
                                 }
-                            }
                         }
                     }
                 }

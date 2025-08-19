@@ -32,6 +32,8 @@ data class IPTVUiState(
     val testResult: String? = null,
     val savedPlaylists: List<PlaylistConfig> = emptyList(),
     val activePlaylistId: String? = null,
+    val channelListFirstVisibleIndex: Int? = null,
+    val channelListFirstVisibleScrollOffset: Int? = null,
     val orientationBeforeStream: Int? = null
 )
 
@@ -263,6 +265,13 @@ class IPTVViewModel(application: Application) : AndroidViewModel(application) {
             orientationBeforeStream = this.getApplication<Application>().resources.configuration.orientation,
             selectedChannel = channel,
             currentScreen = Screen.VideoPlayer
+        )
+    }
+
+    fun saveChannelListScroll(index: Int, offset: Int) {
+        _uiState.value = _uiState.value.copy(
+            channelListFirstVisibleIndex = index,
+            channelListFirstVisibleScrollOffset = offset
         )
     }
     

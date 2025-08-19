@@ -43,8 +43,11 @@ fun VideoPlayerScreen(
             it.hide(WindowInsetsCompat.Type.systemBars())
             it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
+        window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
         onDispose {
             controller?.show(WindowInsetsCompat.Type.systemBars())
+            window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }
 
