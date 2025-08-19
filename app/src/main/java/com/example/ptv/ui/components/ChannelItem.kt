@@ -37,7 +37,7 @@ fun ChannelItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
            
-            if (channel.logo.isNotEmpty()) { // Use Coil to load the channel logo asynchronously
+            if (channel.logo.isNotEmpty()) { 
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(channel.logo)

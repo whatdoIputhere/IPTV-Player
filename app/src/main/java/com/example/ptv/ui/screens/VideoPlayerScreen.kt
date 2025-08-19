@@ -12,6 +12,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -32,6 +35,19 @@ fun VideoPlayerScreen(
     val context = LocalContext.current
     val activity = context as? android.app.Activity
 
+    DisposableEffect(activity) {
+        val window = activity?.window
+        val controller = window?.let { WindowCompat.getInsetsController(it, it.decorView) }
+
+        controller?.let {
+            it.hide(WindowInsetsCompat.Type.systemBars())
+            it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+        onDispose {
+            controller?.show(WindowInsetsCompat.Type.systemBars())
+        }
+    }
+
    
     val exoPlayer = remember(channel.url) {
         ExoPlayer.Builder(context).build().apply {
@@ -45,7 +61,6 @@ fun VideoPlayerScreen(
         onDispose { exoPlayer.release() }
     }
 
-    // helper: restore orientation then unlock (allow system rotation)
     fun restoreAndUnlock(prevConfig: Int?) {
         prevConfig?.let { prev ->
             val mapped = if (prev == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
@@ -54,7 +69,6 @@ fun VideoPlayerScreen(
                 android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }
             activity?.requestedOrientation = mapped
-            // clear the requestedOrientation after a short delay so rotation is not locked
             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                 activity?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
             }, 300L)
@@ -62,7 +76,6 @@ fun VideoPlayerScreen(
     }
 
     BackHandler {
-        // Restore and unlock then navigate back
         restoreAndUnlock(orientationBeforeStream)
         onBackClick()
     }
@@ -108,7 +121,6 @@ fun VideoPlayerScreen(
                 ) {
                     IconButton(
                         onClick = {
-                            // Restore previous orientation (if available) then go back (and unlock)
                             restoreAndUnlock(orientationBeforeStream)
                             onBackClick()
                         },
