@@ -21,19 +21,25 @@ import com.example.ptv.model.Channel
 fun ChannelItem(
     channel: Channel,
     onChannelClick: (Channel) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    compact: Boolean = false
 ) {
+    val outerPaddingH = if (compact) 8.dp else 14.dp
+    val outerPaddingV = if (compact) 6.dp else 3.dp
+    val innerPadding = if (compact) 12.dp else 14.dp
+    val imageSize = if (compact) 40.dp else 44.dp
+
     Card(
         modifier = modifier
             .fillMaxWidth()
             .clickable { onChannelClick(channel) }
-            .padding(horizontal = 16.dp, vertical = 4.dp),
+            .padding(horizontal = outerPaddingH, vertical = outerPaddingV),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(innerPadding),
             verticalAlignment = Alignment.CenterVertically
         ) {
            
@@ -45,7 +51,7 @@ fun ChannelItem(
                         .build(),
                     contentDescription = "Channel logo",
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(imageSize)
                         .clip(RoundedCornerShape(8.dp)),
                     contentScale = ContentScale.Fit
                 )
@@ -53,7 +59,7 @@ fun ChannelItem(
                
                 Surface(
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(imageSize)
                         .clip(RoundedCornerShape(8.dp)),
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                 ) {

@@ -27,6 +27,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalConfiguration
+import android.content.res.Configuration
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +38,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.ptv.model.Channel
 import com.example.ptv.ui.components.ChannelItem
 import com.example.ptv.util.FunFacts
@@ -58,10 +61,11 @@ fun ChannelListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                modifier = Modifier.height(56.dp),
                 title = {
                     Text(
                         text = "IPTV Player",
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.titleSmall
                     )
                 },
                 actions = {
@@ -82,9 +86,13 @@ fun ChannelListScreen(
                     }
 
                     TextButton(
-                        onClick = onShowSavedPlaylists
+                        onClick = onShowSavedPlaylists,
+                        modifier = Modifier
+                            .height(36.dp)
+                            .padding(end = 4.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                     ) {
-                        Text("Playlists")
+                        Text("Playlists", style = MaterialTheme.typography.labelLarge)
                     }
                 }
             )
@@ -114,15 +122,19 @@ fun ChannelListScreen(
                     OutlinedTextField(
                         value = categorySearchQuery,
                         onValueChange = { categorySearchQuery = it },
-                        label = { Text("Search categories") },
+                        label = { Text("Search categories", style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp)) },
                         leadingIcon = {
                             Icon(Icons.Default.Search, contentDescription = "Search")
                         },
+                        textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
-                        singleLine = true
+                            .padding(12.dp)
+                            .height(58.dp),
+                        singleLine = true,
+                        maxLines = 1
                     )
+                    Spacer(modifier = Modifier.height(12.dp))
 
 
                     val filteredCategories by remember(categories, categorySearchQuery) {
@@ -148,17 +160,16 @@ fun ChannelListScreen(
                             columns = GridCells.Fixed(2),
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(horizontal = 16.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
+                                .padding(horizontal = 12.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) { 
                         items(filteredCategories, key = { it }) { category ->
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(120.dp)
+                                        .height(84.dp)
                                     .clickable {
-                                                // save scroll position before navigating
                                                 onSaveScroll(gridState.firstVisibleItemIndex, gridState.firstVisibleItemScrollOffset)
                                                 onCategorySelect(category)
                                             },
@@ -169,7 +180,7 @@ fun ChannelListScreen(
                             ) {
                                 Box(
                                     contentAlignment = Alignment.Center,
-                                    modifier = Modifier.fillMaxSize().padding(8.dp)
+                                    modifier = Modifier.fillMaxSize().padding(6.dp)
                                 ) {
                                     Text(
                                         text = category,
@@ -196,31 +207,42 @@ fun ChannelListScreen(
                         }
                     }
                 } else {
-
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        OutlinedTextField(
+            OutlinedTextField(
                             value = uiState.searchQuery,
                             onValueChange = onSearchQueryChange,
-                            label = { Text("Search channels") },
+                            label = { Text("Search channels", style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp)) },
                             leadingIcon = {
                                 Icon(Icons.Default.Search, contentDescription = "Search")
                             },
-                            modifier = Modifier.weight(1f),
-                            singleLine = true
+                            textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                            modifier = Modifier
+                .weight(1f)
+                .height(58.dp)
+                .alignByBaseline(),
+                            singleLine = true,
+                            maxLines = 1
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Button(onClick = {
-                            categorySearchQuery = ""
-                            onBackToCategories()
-                        }) {
-                            Text("Categories")
+                        Button(
+                            onClick = {
+                                categorySearchQuery = ""
+                                onBackToCategories()
+                            },
+                            modifier = Modifier
+                                .height(58.dp)
+                                .alignByBaseline(),
+                            contentPadding = PaddingValues(horizontal = 12.dp)
+                        ) {
+                            Text("Categories", style = MaterialTheme.typography.labelLarge)
                         }
                     }
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
 
@@ -299,6 +321,36 @@ fun ChannelListScreen(
                                 Text("No channels match your search in this category")
                             }
                         } else {
+                            val configuration = LocalConfiguration.current
+                            if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                                val gridState = rememberLazyGridState(
+                                    initialFirstVisibleItemIndex = uiState.channelListFirstVisibleIndex ?: 0,
+                                    initialFirstVisibleItemScrollOffset = uiState.channelListFirstVisibleScrollOffset ?: 0
+                                )
+
+                                LazyVerticalGrid(
+                                    state = gridState,
+                                    columns = GridCells.Fixed(3),
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(horizontal = 8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    content = {
+                                        items(filteredChannels, key = { it.name }) { channel ->
+                                            ChannelItem(
+                                                channel = channel,
+                                                onChannelClick = {
+                                                    onSaveScroll(gridState.firstVisibleItemIndex, gridState.firstVisibleItemScrollOffset)
+                                                    onChannelClick(channel)
+                                                },
+                                                modifier = Modifier.fillMaxWidth(),
+                                                compact = true
+                                            )
+                                        }
+                                    }
+                                )
+                            } else {
                                 val listState = rememberLazyListState(
                                     initialFirstVisibleItemIndex = uiState.channelListFirstVisibleIndex ?: 0,
                                     initialFirstVisibleItemScrollOffset = uiState.channelListFirstVisibleScrollOffset ?: 0
@@ -309,13 +361,13 @@ fun ChannelListScreen(
                                         ChannelItem(
                                             channel = channel,
                                             onChannelClick = {
-                                                // save scroll position then navigate to channel
                                                 onSaveScroll(listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset)
                                                 onChannelClick(channel)
                                             }
                                         )
                                     }
                                 }
+                            }
                         }
                     }
                 }

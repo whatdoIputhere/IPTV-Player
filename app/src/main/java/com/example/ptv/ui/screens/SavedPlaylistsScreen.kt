@@ -43,7 +43,8 @@ fun SavedPlaylistsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Saved Playlists") },
+                modifier = Modifier.height(48.dp),
+                title = { Text("Saved Playlists", style = MaterialTheme.typography.titleSmall) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
