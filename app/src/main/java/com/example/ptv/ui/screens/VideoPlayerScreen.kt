@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -85,6 +86,13 @@ fun VideoPlayerScreen(
 
     var controlsVisible by remember { mutableStateOf(true) }
 
+    LaunchedEffect(controlsVisible) {
+        if (controlsVisible) {
+            delay(3000L)
+            controlsVisible = false
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -95,6 +103,7 @@ fun VideoPlayerScreen(
                 PlayerView(ctx).apply {
                     player = exoPlayer
                     useController = true
+                        setControllerShowTimeoutMs(3000)
                     setControllerVisibilityListener { visibility ->
                         controlsVisible = visibility == android.view.View.VISIBLE
                     }
@@ -102,6 +111,7 @@ fun VideoPlayerScreen(
             },
             modifier = Modifier.fillMaxSize(),
             update = { view ->
+                    view.setControllerShowTimeoutMs(3000)
                 view.setControllerVisibilityListener { visibility ->
                     controlsVisible = visibility == android.view.View.VISIBLE
                 }
