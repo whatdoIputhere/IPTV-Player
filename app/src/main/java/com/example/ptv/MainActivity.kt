@@ -3,6 +3,8 @@ package com.example.ptv
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
+import androidx.compose.ui.platform.LocalContext
+import android.app.Activity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
@@ -11,6 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,6 +24,8 @@ import com.example.ptv.ui.screens.VideoPlayerScreen
 import com.example.ptv.ui.theme.PtvTheme
 import com.example.ptv.viewmodel.IPTVViewModel
 import com.example.ptv.viewmodel.Screen
+import androidx.activity.compose.LocalActivity
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,12 +45,15 @@ fun IPTVApp() {
     val uiState by viewModel.uiState.collectAsState()
     
    
-    BackHandler(enabled = uiState.currentScreen != Screen.ChannelList || uiState.selectedCategory != null) {
+    var showExitDialog by remember { mutableStateOf(false) }
+    val activity = LocalActivity.current
+
+    BackHandler(enabled = true) {
         when {
             uiState.currentScreen == Screen.VideoPlayer -> viewModel.clearSelectedChannel()
             uiState.currentScreen == Screen.SavedPlaylists -> viewModel.navigateToChannelList()
             uiState.selectedCategory != null -> viewModel.clearSelectedCategory()
-            else -> { /* Let system handle - exit app */ }
+            else -> showExitDialog = true
         }
     }
     
@@ -103,6 +112,26 @@ fun IPTVApp() {
                         )
                     }
                 }
+            }
+            if (showExitDialog) {
+                androidx.compose.material3.AlertDialog(
+                    onDismissRequest = { showExitDialog = false },
+                    confirmButton = {
+                        Button(onClick = {
+                            showExitDialog = false
+                            activity?.finishAndRemoveTask()
+                        }) {
+                            Text("Exit")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showExitDialog = false }) {
+                            Text("Cancel")
+                        }
+                    },
+                    title = { Text("Exit app") },
+                    text = { Text("Are you sure you want to exit the app?") }
+                )
             }
         }
     }
