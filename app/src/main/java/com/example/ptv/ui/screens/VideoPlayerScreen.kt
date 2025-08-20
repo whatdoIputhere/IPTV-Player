@@ -25,6 +25,9 @@ import com.example.ptv.model.Channel
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.PlaybackException
+import com.google.android.exoplayer2.upstream.HttpDataSource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,12 +55,30 @@ fun VideoPlayerScreen(
         }
     }
 
-   
+    var httpErrorCode by remember { mutableStateOf<Int?>(null) }
+
     val exoPlayer = remember(channel.url) {
         ExoPlayer.Builder(context).build().apply {
             setMediaItem(MediaItem.fromUri(channel.url))
             prepare()
             playWhenReady = true
+            addListener(object : Player.Listener {
+                override fun onPlayerError(error: PlaybackException) {
+                    var cause: Throwable? = error.cause
+                    var foundCode: Int? = null
+                    while (cause != null && foundCode == null) {
+                        if (cause is HttpDataSource.InvalidResponseCodeException) {
+                            foundCode = cause.responseCode
+                        }
+                        cause = cause.cause
+                    }
+                    if (foundCode != null) {
+                        httpErrorCode = foundCode
+                    } else {                    
+                        httpErrorCode = null
+                    }
+                }
+            })
         }
     }
 
@@ -103,7 +124,7 @@ fun VideoPlayerScreen(
                 PlayerView(ctx).apply {
                     player = exoPlayer
                     useController = true
-                        setControllerShowTimeoutMs(3000)
+                    setControllerShowTimeoutMs(3000)
                     setControllerVisibilityListener { visibility ->
                         controlsVisible = visibility == android.view.View.VISIBLE
                     }
@@ -111,7 +132,7 @@ fun VideoPlayerScreen(
             },
             modifier = Modifier.fillMaxSize(),
             update = { view ->
-                    view.setControllerShowTimeoutMs(3000)
+                view.setControllerShowTimeoutMs(3000)
                 view.setControllerVisibilityListener { visibility ->
                     controlsVisible = visibility == android.view.View.VISIBLE
                 }
@@ -180,6 +201,44 @@ fun VideoPlayerScreen(
                                 color = Color.White.copy(alpha = 0.8f),
                                 style = MaterialTheme.typography.bodySmall
                             )
+                        }
+                    }
+                }
+            }
+        }
+
+        if (httpErrorCode != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.6f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.DarkGray.copy(alpha = 0.85f))
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(
+                            text = "Stream couldn't be played",
+                            color = Color.White,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Server returned HTTP ${httpErrorCode}. The stream is unavailable.",
+                            color = Color.White.copy(alpha = 0.85f),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Button(onClick = {
+                            restoreAndUnlock(orientationBeforeStream)
+                            onBackClick()
+                        }) {
+                            Text("Back", color = Color.White)
                         }
                     }
                 }
