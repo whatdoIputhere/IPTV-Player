@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -28,6 +29,7 @@ import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.upstream.HttpDataSource
+import com.example.ptv.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -162,7 +164,7 @@ fun VideoPlayerScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(id = R.string.back)
                         )
                     }
 
@@ -181,7 +183,7 @@ fun VideoPlayerScreen(
                     ) {
                         Icon(
                             painter = painterResource(id = com.example.ptv.R.drawable.rotate),
-                            contentDescription = "Toggle rotation",
+                            contentDescription = stringResource(id = R.string.toggle_rotation),
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -224,13 +226,13 @@ fun VideoPlayerScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Text(
-                            text = "Stream couldn't be played",
+                            text = stringResource(id = R.string.stream_unavailable_message),
                             color = Color.White,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Server returned HTTP ${httpErrorCode}. The stream is unavailable.",
+                            text = stringResource(id = R.string.server_returned_http, httpErrorCode ?: 0),
                             color = Color.White.copy(alpha = 0.85f),
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -238,7 +240,7 @@ fun VideoPlayerScreen(
                             restoreAndUnlock(orientationBeforeStream)
                             onBackClick()
                         }) {
-                            Text("Back", color = Color.White)
+                            Text(stringResource(id = R.string.back), color = Color.White)
                         }
                     }
                 }

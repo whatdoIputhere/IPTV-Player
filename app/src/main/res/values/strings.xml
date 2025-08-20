@@ -1,3 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">IPTV Player</string>
+    <string name="title_iptv_player">IPTV Player</string>
+
+    <string name="refresh_playlist">Refresh Playlist</string>
+    <string name="playlists">Playlists</string>
+    <string name="search">Search</string>
+    <string name="search_categories">Search categories</string>
+    <string name="search_channels">Search channels</string>
+    <string name="categories">Categories</string>
+
+    <string name="no_categories_match">No categories match your search</string>
+    <string name="no_channels_loaded">No channels loaded</string>
+    <string name="add_and_load_playlist">Add and load a playlist to get started</string>
+    <string name="no_channels_match_in_category">No channels match your search in this category</string>
+
+    <string name="error">Error</string>
+
+    <string name="loading_iptv_channels">Loading IPTV channels...</string>
+    <string name="loading_from_cache">Loading from cache...</string>
+    <string name="loading">Loading</string>
+
+    <string name="saved_playlists">Saved Playlists</string>
+    <string name="back">Back</string>
+    <string name="add_playlist">Add Playlist</string>
+    <string name="add_m3u_url">Add M3U URL</string>
+    <string name="add_xtream_codes">Add Xtream Codes</string>
+    <string name="no_playlists_saved">No playlists saved.</string>
+
+    <string name="active">Active</string>
+    <string name="set_active">Set Active</string>
+    <string name="load_now">Load now</string>
+    <string name="delete">Delete</string>
+
+    <string name="add_m3u_playlist">Add M3U Playlist</string>
+    <string name="display_name">Display name</string>
+    <string name="m3u_url">M3U URL</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="m3u_playlist">M3U Playlist</string>
+    <string name="xtream_playlist">Xtream Playlist</string>
+    <string name="host_url">Host URL</string>
+    <string name="example_host">http://example.com:8080</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+
+    <string name="toggle_rotation">Toggle rotation</string>
+    <string name="stream_unavailable_message">Stream could not be played</string>
+    <string name="server_returned_http">Server returned HTTP %1$d. The stream is unavailable.</string>
 </resources>

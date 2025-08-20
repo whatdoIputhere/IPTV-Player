@@ -38,6 +38,8 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.ptv.R
 import com.example.ptv.model.Channel
 import com.example.ptv.ui.components.ChannelItem
 import com.example.ptv.util.FunFacts
@@ -72,7 +74,7 @@ fun ChannelListScreen(
                 modifier = Modifier.height(56.dp),
                 title = {
                     Text(
-                        text = "IPTV Player",
+                        text = stringResource(id = R.string.title_iptv_player),
                         style = MaterialTheme.typography.titleSmall
                     )
                 },
@@ -84,7 +86,7 @@ fun ChannelListScreen(
                         ) {
                             Icon(
                                 Icons.Default.Refresh,
-                                contentDescription = "Refresh Playlist",
+                                contentDescription = stringResource(id = R.string.refresh_playlist),
                                 tint = if (uiState.isLoading)
                                     MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                                 else
@@ -100,7 +102,7 @@ fun ChannelListScreen(
                             .padding(end = 4.dp),
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                     ) {
-                        Text("Playlists", style = MaterialTheme.typography.labelLarge)
+                        Text(stringResource(id = R.string.playlists), style = MaterialTheme.typography.labelLarge)
                     }
                 }
             )
@@ -130,9 +132,9 @@ fun ChannelListScreen(
                     OutlinedTextField(
                         value = categorySearchQuery,
                         onValueChange = { categorySearchQuery = it },
-                        label = { Text("Search categories", style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp)) },
+                        label = { Text(stringResource(id = R.string.search_categories), style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp)) },
                         leadingIcon = {
-                            Icon(Icons.Default.Search, contentDescription = "Search")
+                            Icon(Icons.Default.Search, contentDescription = stringResource(id = R.string.search))
                         },
                         textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                         modifier = Modifier
@@ -208,7 +210,7 @@ fun ChannelListScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "No categories match your search",
+                                text = stringResource(id = R.string.no_categories_match),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                             )
@@ -224,9 +226,9 @@ fun ChannelListScreen(
             OutlinedTextField(
                             value = uiState.searchQuery,
                             onValueChange = onSearchQueryChange,
-                            label = { Text("Search channels", style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp)) },
+                            label = { Text(stringResource(id = R.string.search_channels), style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp)) },
                             leadingIcon = {
-                                Icon(Icons.Default.Search, contentDescription = "Search")
+                                Icon(Icons.Default.Search, contentDescription = stringResource(id = R.string.search))
                             },
                             textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                             modifier = Modifier
@@ -247,7 +249,7 @@ fun ChannelListScreen(
                                 .alignByBaseline(),
                             contentPadding = PaddingValues(horizontal = 12.dp)
                         ) {
-                            Text("Categories", style = MaterialTheme.typography.labelLarge)
+                            Text(stringResource(id = R.string.categories), style = MaterialTheme.typography.labelLarge)
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -266,7 +268,7 @@ fun ChannelListScreen(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
-                                    text = "Error",
+                                    text = stringResource(id = R.string.error),
                                     style = MaterialTheme.typography.headlineSmall,
                                     color = MaterialTheme.colorScheme.error
                                 )
@@ -288,11 +290,11 @@ fun ChannelListScreen(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
-                                    text = "No channels loaded",
+                                    text = stringResource(id = R.string.no_channels_loaded),
                                     style = MaterialTheme.typography.headlineSmall
                                 )
                                 Text(
-                                    text = "Load a playlist to get started",
+                                    text = stringResource(id = R.string.add_and_load_playlist),
                                     style = MaterialTheme.typography.bodyMedium,
                                     modifier = Modifier.padding(top = 8.dp)
                                 )
@@ -300,7 +302,7 @@ fun ChannelListScreen(
                                     onClick = onShowSavedPlaylists,
                                     modifier = Modifier.padding(top = 16.dp)
                                 ) {
-                                    Text("Playlists")
+                                    Text(stringResource(id = R.string.playlists))
                                 }
                             }
                         }
@@ -322,11 +324,11 @@ fun ChannelListScreen(
                             }
                         }
                         if (filteredChannels.isEmpty()) {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("No channels match your search in this category")
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                Text(stringResource(id = R.string.no_channels_match_in_category))
                             }
                         } else {
                             val configuration = LocalConfiguration.current
@@ -470,7 +472,7 @@ fun EnhancedLoadingScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
-                        contentDescription = "Loading",
+                        contentDescription = stringResource(id = com.example.ptv.R.string.loading),
                         modifier = Modifier
                             .size(48.dp)
                             .rotate(rotation),
@@ -524,7 +526,7 @@ fun EnhancedLoadingScreen(
                     )
                 } else {
                     Text(
-                        text = "Loading IPTV channels...",
+                        text = stringResource(id = com.example.ptv.R.string.loading_iptv_channels),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center,
@@ -587,7 +589,7 @@ fun LoadingOverlay(
                 }
 
                 Text(
-                    text = status.ifBlank { "Loading from cache..." },
+                    text = status.ifBlank { stringResource(id = com.example.ptv.R.string.loading_from_cache) },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )

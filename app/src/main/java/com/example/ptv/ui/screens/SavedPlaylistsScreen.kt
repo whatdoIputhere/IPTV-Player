@@ -15,6 +15,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.example.ptv.R
 import com.example.ptv.model.PlaylistConfig
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,33 +42,37 @@ fun SavedPlaylistsScreen(
     var xtreamUsername by remember { mutableStateOf("") }
     var xtreamPassword by remember { mutableStateOf("") }
 
+    // Resolve default names at composition time so they can be used inside non-composable lambdas
+    val defaultM3uName = stringResource(id = R.string.m3u_playlist)
+    val defaultXtreamName = stringResource(id = R.string.xtream_playlist)
+
     Scaffold(
         topBar = {
-            TopAppBar(
-                modifier = Modifier.height(48.dp),
-                title = { Text("Saved Playlists", style = MaterialTheme.typography.titleSmall) },
+        TopAppBar(
+        modifier = Modifier.height(48.dp),
+        title = { Text(stringResource(id = R.string.saved_playlists), style = MaterialTheme.typography.titleSmall) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(id = R.string.back))
                     }
                 },
                 actions = {
                     IconButton(onClick = { showAddMenu = true }) {
-                        Icon(Icons.Default.Add, contentDescription = "Add Playlist")
+            Icon(Icons.Default.Add, contentDescription = stringResource(id = R.string.add_playlist))
                     }
                     DropdownMenu(
                         expanded = showAddMenu, 
                         onDismissRequest = { showAddMenu = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Add M3U URL") },
+                            text = { Text(stringResource(id = R.string.add_m3u_url)) },
                             onClick = {
                                 showAddMenu = false
                                 showM3UDialog = true
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Add Xtream Codes") },
+                            text = { Text(stringResource(id = R.string.add_xtream_codes)) },
                             onClick = {
                                 showAddMenu = false
                                 showXtreamDialog = true
@@ -78,12 +84,12 @@ fun SavedPlaylistsScreen(
         }
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
-            if (playlists.isEmpty()) {
+                    if (playlists.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(), 
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("No playlists saved.")
+                    Text(stringResource(id = R.string.no_playlists_saved))
                 }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -93,10 +99,10 @@ fun SavedPlaylistsScreen(
                             supportingContent = { Text(playlist.type) },
                             trailingContent = {
                                 if (playlist.id == activePlaylistId) {
-                                    Text("Active", color = MaterialTheme.colorScheme.primary)
+                                    Text(stringResource(id = R.string.active), color = MaterialTheme.colorScheme.primary)
                                 } else {
                                     Button(onClick = { onSelectPlaylist(playlist.id) }) {
-                                        Text("Set Active")
+                                        Text(stringResource(id = R.string.set_active))
                                     }
                                 }
                             }
@@ -108,10 +114,10 @@ fun SavedPlaylistsScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             TextButton(onClick = { onSelectPlaylist(playlist.id) }) {
-                                Text("Load now")
+                                Text(stringResource(id = R.string.load_now))
                             }
                             TextButton(onClick = { onDeletePlaylist(playlist.id) }) {
-                                Text("Delete")
+                                Text(stringResource(id = R.string.delete))
                             }
                         }
                         HorizontalDivider()
@@ -129,18 +135,18 @@ fun SavedPlaylistsScreen(
                 m3uName = ""
                 m3uUrl = ""
             },
-            title = { Text("Add M3U Playlist") },
+            title = { Text(stringResource(id = R.string.add_m3u_playlist)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedTextField(
                         value = m3uName, 
                         onValueChange = { m3uName = it }, 
-                        label = { Text("Display name") }
+                        label = { Text(stringResource(id = R.string.display_name)) }
                     )
                     OutlinedTextField(
                         value = m3uUrl, 
                         onValueChange = { m3uUrl = it }, 
-                        label = { Text("M3U URL") }
+                        label = { Text(stringResource(id = R.string.m3u_url)) }
                     )
                 }
             },
@@ -148,14 +154,14 @@ fun SavedPlaylistsScreen(
                 TextButton(
                     onClick = {
                         if (m3uUrl.isNotBlank()) {
-                            onAddM3U(m3uName.ifBlank { "M3U Playlist" }, m3uUrl)
+                            onAddM3U(m3uName.ifBlank { defaultM3uName }, m3uUrl)
                             m3uName = ""
                             m3uUrl = ""
                             showM3UDialog = false
                         }
                     }
-                ) { 
-                    Text("Save") 
+                    ) { 
+                    Text(stringResource(id = R.string.save)) 
                 }
             },
             dismissButton = {
@@ -166,7 +172,7 @@ fun SavedPlaylistsScreen(
                         m3uUrl = ""
                     }
                 ) { 
-                    Text("Cancel") 
+                    Text(stringResource(id = R.string.cancel)) 
                 }
             }
         )
@@ -182,30 +188,30 @@ fun SavedPlaylistsScreen(
                 xtreamUsername = ""
                 xtreamPassword = ""
             },
-            title = { Text("Add Xtream Codes") },
+            title = { Text(stringResource(id = R.string.add_xtream_codes)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedTextField(
                         value = xtreamName,
                         onValueChange = { xtreamName = it },
-                        label = { Text("Display name") }
+                        label = { Text(stringResource(id = R.string.display_name)) }
                     )
                     OutlinedTextField(
                         value = xtreamHost,
                         onValueChange = { xtreamHost = it },
-                        label = { Text("Host URL") },
-                        placeholder = { Text("http://example.com:8080") },
+                        label = { Text(stringResource(id = R.string.host_url)) },
+                        placeholder = { Text(stringResource(id = R.string.example_host)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri)
                     )
                     OutlinedTextField(
                         value = xtreamUsername,
                         onValueChange = { xtreamUsername = it },
-                        label = { Text("Username") }
+                        label = { Text(stringResource(id = R.string.username)) }
                     )
                     OutlinedTextField(
                         value = xtreamPassword,
                         onValueChange = { xtreamPassword = it },
-                        label = { Text("Password") },
+                        label = { Text(stringResource(id = R.string.password)) },
                         visualTransformation = PasswordVisualTransformation()
                     )
                 }
@@ -215,7 +221,7 @@ fun SavedPlaylistsScreen(
                     onClick = {
                         if (xtreamHost.isNotBlank() && xtreamUsername.isNotBlank() && xtreamPassword.isNotBlank()) {
                             onAddXtream(
-                                xtreamName.ifBlank { "Xtream Playlist" }, 
+                                xtreamName.ifBlank { defaultXtreamName }, 
                                 xtreamHost, 
                                 xtreamUsername, 
                                 xtreamPassword
@@ -227,8 +233,8 @@ fun SavedPlaylistsScreen(
                             showXtreamDialog = false
                         }
                     }
-                ) { 
-                    Text("Save") 
+                    ) { 
+                    Text(stringResource(id = R.string.save)) 
                 }
             },
             dismissButton = {
@@ -241,7 +247,7 @@ fun SavedPlaylistsScreen(
                         xtreamPassword = ""
                     }
                 ) { 
-                    Text("Cancel") 
+                    Text(stringResource(id = R.string.cancel)) 
                 }
             }
         )
