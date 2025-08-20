@@ -58,6 +58,15 @@ fun ChannelListScreen(
 ) {
     var categorySearchQuery by rememberSaveable { mutableStateOf("") }
 
+    val lastAutoRefreshError = remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(uiState.error) {
+        val err = uiState.error
+        if (!err.isNullOrBlank() && err.contains("458") && lastAutoRefreshError.value != err) {
+            lastAutoRefreshError.value = err
+            onRefreshPlaylist()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
