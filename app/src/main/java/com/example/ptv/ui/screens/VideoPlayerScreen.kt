@@ -69,77 +69,11 @@ fun VideoPlayerScreen(
 
     var httpErrorCode by remember { mutableStateOf<Int?>(null) }
 
-    val exoPlayer = remember(channel.url) {
-        // Use OkHttp data source with logging and timeouts to avoid silent stalls
-        val logging = HttpLoggingInterceptor(object : HttpLoggingInterceptor.Logger {
-            override fun log(message: String) {
-                Log.d(TAG, "OkHttp: $message")
-            }
-        }).apply { level = HttpLoggingInterceptor.Level.BASIC }
+    val vm: VideoPlayerViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    val exoPlayer = vm.exoPlayer
 
-        val okHttpClient = OkHttpClient.Builder()
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(15, TimeUnit.SECONDS)
-            .addInterceptor(logging)
-            .build()
-
-        val dataSourceFactory = OkHttpDataSource.Factory(okHttpClient)
-
-        val mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory)
-
-        val loadControl = DefaultLoadControl.Builder()
-            .setBufferDurationsMs(
-                /* minBufferMs = */ 15_000,
-                /* maxBufferMs = */ 50_000,
-                /* bufferForPlaybackMs = */ 2_500,
-                /* bufferForPlaybackAfterRebufferMs = */ 5_000
-            )
-            .build()
-
-        ExoPlayer.Builder(context)
-            .setMediaSourceFactory(mediaSourceFactory)
-            .setLoadControl(loadControl)
-            .build().apply {
-                val mediaItemBuilder = MediaItem.Builder().setUri(channel.url)
-                if (channel.url.contains(".m3u8", ignoreCase = true)) {
-                    mediaItemBuilder.setMimeType(MimeTypes.APPLICATION_M3U8)
-                }
-                setMediaItem(mediaItemBuilder.build())
-            prepare()
-            playWhenReady = true
-            addListener(object : Player.Listener {
-                override fun onPlayerError(error: PlaybackException) {
-                    Log.w(TAG, "onPlayerError: ${error.message}")
-                    var cause: Throwable? = error.cause
-                    var foundCode: Int? = null
-                    while (cause != null && foundCode == null) {
-                        if (cause is HttpDataSource.InvalidResponseCodeException) {
-                            foundCode = cause.responseCode
-                        }
-                        cause = cause.cause
-                    }
-                    httpErrorCode = foundCode
-                }
-
-                override fun onIsLoadingChanged(isLoading: Boolean) {
-                    Log.d(TAG, "onIsLoadingChanged: isLoading=$isLoading")
-                }
-
-                override fun onPlaybackStateChanged(playbackState: Int) {
-                    Log.d(TAG, "onPlaybackStateChanged: state=$playbackState")
-                }
-            })
-
-            addAnalyticsListener(object : AnalyticsListener {
-                override fun onBandwidthEstimate(eventTime: AnalyticsListener.EventTime, totalLoadTimeMs: Int, bytesLoaded: Long, bitrateEstimate: Long) {
-                    Log.d(TAG, "Analytics onBandwidthEstimate: bytesLoaded=$bytesLoaded bitrateEstimate=$bitrateEstimate")
-                }
-            })
-        }
-    }
-
-    DisposableEffect(exoPlayer) {
-        onDispose { exoPlayer.release() }
+    LaunchedEffect(channel.url) {
+        vm.setUrl(channel.url)
     }
 
     fun restoreAndUnlock(prevConfig: Int?) {
