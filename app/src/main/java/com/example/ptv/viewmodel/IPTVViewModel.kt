@@ -129,8 +129,13 @@ class IPTVViewModel(application: Application) : AndroidViewModel(application) {
 
     fun removePlaylist(id: String) {
         repository.removePlaylist(id)
+        if (_uiState.value.activePlaylistId == id) {
+            _uiState.value = _uiState.value.copy(activePlaylistId = null)
+            //TODO: Clear channel list
+        }
         loadSavedPlaylists()
     }
+
     private val repository = SimpleIPTVRepository(application)
     
     private val _uiState = MutableStateFlow(IPTVUiState())

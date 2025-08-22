@@ -1,5 +1,6 @@
 package com.example.ptv.ui.screens
 
+import android.content.res.Configuration
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -11,12 +12,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
@@ -27,18 +28,17 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.runtime.*
-import androidx.compose.ui.platform.LocalConfiguration
-import android.content.res.Configuration
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.res.stringResource
 import com.example.ptv.R
 import com.example.ptv.model.Channel
 import com.example.ptv.ui.components.ChannelItem
@@ -48,14 +48,14 @@ import com.example.ptv.viewmodel.IPTVUiState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChannelListScreen(
-    uiState: IPTVUiState,
-    onChannelClick: (Channel) -> Unit,
-    onSaveScroll: (firstVisibleIndex: Int, firstVisibleScrollOffset: Int) -> Unit,
-    onSearchQueryChange: (String) -> Unit,
-    onCategorySelect: (String) -> Unit,
-    onShowSavedPlaylists: () -> Unit = {},
-    onRefreshPlaylist: () -> Unit = {},
-    onBackToCategories: () -> Unit = {}
+        uiState: IPTVUiState,
+        onChannelClick: (Channel) -> Unit,
+        onSaveScroll: (firstVisibleIndex: Int, firstVisibleScrollOffset: Int) -> Unit,
+        onSearchQueryChange: (String) -> Unit,
+        onCategorySelect: (String) -> Unit,
+        onShowSavedPlaylists: () -> Unit = {},
+        onRefreshPlaylist: () -> Unit = {},
+        onBackToCategories: () -> Unit = {}
 ) {
     var categorySearchQuery by rememberSaveable { mutableStateOf("") }
 
@@ -69,311 +69,342 @@ fun ChannelListScreen(
     }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                modifier = Modifier.height(56.dp),
-                title = {
-                    Text(
-                        text = stringResource(id = R.string.title_iptv_player),
-                        style = MaterialTheme.typography.titleSmall
-                    )
-                },
-                actions = {
-                    if (uiState.channels.isNotEmpty()) {
-                        IconButton(
-                            onClick = onRefreshPlaylist,
-                            enabled = !uiState.isLoading
-                        ) {
-                            Icon(
-                                Icons.Default.Refresh,
-                                contentDescription = stringResource(id = R.string.refresh_playlist),
-                                tint = if (uiState.isLoading)
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                                else
-                                    MaterialTheme.colorScheme.onSurface
+            topBar = {
+                TopAppBar(
+                        modifier = Modifier.height(56.dp),
+                        title = {
+                            Text(
+                                    text = stringResource(id = R.string.title_iptv_player),
+                                    style = MaterialTheme.typography.titleSmall
                             )
+                        },
+                        actions = {
+                            if (uiState.channels.isNotEmpty()) {
+                                IconButton(
+                                        onClick = onRefreshPlaylist,
+                                        enabled = !uiState.isLoading
+                                ) {
+                                    Icon(
+                                            Icons.Default.Refresh,
+                                            contentDescription =
+                                                    stringResource(id = R.string.refresh_playlist),
+                                            tint =
+                                                    if (uiState.isLoading)
+                                                            MaterialTheme.colorScheme.onSurface
+                                                                    .copy(alpha = 0.5f)
+                                                    else MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                                TextButton(
+                                        onClick = onShowSavedPlaylists,
+                                        modifier = Modifier.height(36.dp).padding(end = 4.dp),
+                                        contentPadding =
+                                                PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    Text(
+                                            stringResource(id = R.string.playlists),
+                                            style = MaterialTheme.typography.labelLarge
+                                    )
+                                }
+                            }
                         }
-                    }
-
-                    TextButton(
-                        onClick = onShowSavedPlaylists,
-                        modifier = Modifier
-                            .height(36.dp)
-                            .padding(end = 4.dp),
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text(stringResource(id = R.string.playlists), style = MaterialTheme.typography.labelLarge)
-                    }
-                }
-            )
-        }
+                )
+            }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-
+        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             if (uiState.channels.isNotEmpty()) {
 
-                val categories = remember(uiState.channels) {
-                    val seenCategories = mutableSetOf<String>()
-                    uiState.channels.mapNotNull { channel ->
-                        if (channel.group.isNotBlank() && seenCategories.add(channel.group)) {
-                            channel.group
-                        } else {
-                            null
+                val categories =
+                        remember(uiState.channels) {
+                            val seenCategories = mutableSetOf<String>()
+                            uiState.channels.mapNotNull { channel ->
+                                if (channel.group.isNotBlank() && seenCategories.add(channel.group)
+                                ) {
+                                    channel.group
+                                } else {
+                                    null
+                                }
+                            }
                         }
-                    }
-                }
 
                 if (uiState.selectedCategory == null) {
 
                     OutlinedTextField(
-                        value = categorySearchQuery,
-                        onValueChange = { categorySearchQuery = it },
-                        label = { Text(stringResource(id = R.string.search_categories), style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp)) },
-                        leadingIcon = {
-                            Icon(Icons.Default.Search, contentDescription = stringResource(id = R.string.search))
-                        },
-                        textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(12.dp)
-                            .height(58.dp),
-                        singleLine = true,
-                        maxLines = 1
+                            value = categorySearchQuery,
+                            onValueChange = { categorySearchQuery = it },
+                            label = {
+                                Text(
+                                        stringResource(id = R.string.search_categories),
+                                        style =
+                                                MaterialTheme.typography.bodySmall.copy(
+                                                        fontSize = 12.sp
+                                                )
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                        Icons.Default.Search,
+                                        contentDescription = stringResource(id = R.string.search)
+                                )
+                            },
+                            textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                            modifier = Modifier.fillMaxWidth().padding(12.dp).height(58.dp),
+                            singleLine = true,
+                            maxLines = 1
                     )
                     Spacer(modifier = Modifier.height(12.dp))
 
-
-                    val filteredCategories by remember(categories, categorySearchQuery) {
-                        derivedStateOf {
-                            if (categorySearchQuery.isBlank()) {
-                                categories
-                            } else {
-                                categories.filter { category ->
-                                    category.contains(categorySearchQuery, ignoreCase = true)
+                    val filteredCategories by
+                            remember(categories, categorySearchQuery) {
+                                derivedStateOf {
+                                    if (categorySearchQuery.isBlank()) {
+                                        categories
+                                    } else {
+                                        categories.filter { category ->
+                                            category.contains(
+                                                    categorySearchQuery,
+                                                    ignoreCase = true
+                                            )
+                                        }
+                                    }
                                 }
                             }
-                        }
-                    }
 
+                    val gridState =
+                            rememberLazyGridState(
+                                    initialFirstVisibleItemIndex =
+                                            uiState.channelListFirstVisibleIndex ?: 0,
+                                    initialFirstVisibleItemScrollOffset =
+                                            uiState.channelListFirstVisibleScrollOffset ?: 0
+                            )
 
-                        val gridState = rememberLazyGridState(
-                            initialFirstVisibleItemIndex = uiState.channelListFirstVisibleIndex ?: 0,
-                            initialFirstVisibleItemScrollOffset = uiState.channelListFirstVisibleScrollOffset ?: 0
-                        )
-
-                        LazyVerticalGrid(
+                    LazyVerticalGrid(
                             state = gridState,
                             columns = GridCells.Fixed(2),
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 12.dp),
+                            modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) { 
+                    ) {
                         items(filteredCategories, key = { it }) { category ->
                             Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                        .height(84.dp)
-                                    .clickable {
-                                                onSaveScroll(gridState.firstVisibleItemIndex, gridState.firstVisibleItemScrollOffset)
+                                    modifier =
+                                            Modifier.fillMaxWidth().height(84.dp).clickable {
+                                                onSaveScroll(
+                                                        gridState.firstVisibleItemIndex,
+                                                        gridState.firstVisibleItemScrollOffset
+                                                )
                                                 onCategorySelect(category)
                                             },
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                                ),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+                                    colors =
+                                            CardDefaults.cardColors(
+                                                    containerColor =
+                                                            MaterialTheme.colorScheme
+                                                                    .primaryContainer
+                                            ),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
                             ) {
                                 Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.fillMaxSize().padding(6.dp)
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier.fillMaxSize().padding(6.dp)
                                 ) {
                                     Text(
-                                        text = category,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.primary,
-                                        textAlign = TextAlign.Center
+                                            text = category,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            textAlign = TextAlign.Center
                                     )
                                 }
                             }
                         }
                     }
 
-
                     if (filteredCategories.isEmpty() && categorySearchQuery.isNotBlank()) {
                         Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = stringResource(id = R.string.no_categories_match),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                    text = stringResource(id = R.string.no_categories_match),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                             )
                         }
                     }
                 } else {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            modifier =
+                                    Modifier.fillMaxWidth()
+                                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
                     ) {
-            OutlinedTextField(
-                            value = uiState.searchQuery,
-                            onValueChange = onSearchQueryChange,
-                            label = { Text(stringResource(id = R.string.search_channels), style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp)) },
-                            leadingIcon = {
-                                Icon(Icons.Default.Search, contentDescription = stringResource(id = R.string.search))
-                            },
-                            textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                            modifier = Modifier
-                .weight(1f)
-                .height(58.dp)
-                .alignByBaseline(),
-                            singleLine = true,
-                            maxLines = 1
+                        OutlinedTextField(
+                                value = uiState.searchQuery,
+                                onValueChange = onSearchQueryChange,
+                                label = {
+                                    Text(
+                                            stringResource(id = R.string.search_channels),
+                                            style =
+                                                    MaterialTheme.typography.bodySmall.copy(
+                                                            fontSize = 12.sp
+                                                    )
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                            Icons.Default.Search,
+                                            contentDescription =
+                                                    stringResource(id = R.string.search)
+                                    )
+                                },
+                                textStyle =
+                                        MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                                modifier = Modifier.weight(1f).height(58.dp).alignByBaseline(),
+                                singleLine = true,
+                                maxLines = 1
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Button(
-                            onClick = {
-                                categorySearchQuery = ""
-                                onBackToCategories()
-                            },
-                            modifier = Modifier
-                                .height(58.dp)
-                                .alignByBaseline(),
-                            contentPadding = PaddingValues(horizontal = 12.dp)
+                                onClick = {
+                                    categorySearchQuery = ""
+                                    onBackToCategories()
+                                },
+                                modifier = Modifier.height(58.dp).alignByBaseline(),
+                                contentPadding = PaddingValues(horizontal = 12.dp)
                         ) {
-                            Text(stringResource(id = R.string.categories), style = MaterialTheme.typography.labelLarge)
+                            Text(
+                                    stringResource(id = R.string.categories),
+                                    style = MaterialTheme.typography.labelLarge
+                            )
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
 
-
             Box(modifier = Modifier.fillMaxSize()) {
                 when {
                     uiState.error != null -> {
                         Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
                         ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
-                                    text = stringResource(id = R.string.error),
-                                    style = MaterialTheme.typography.headlineSmall,
-                                    color = MaterialTheme.colorScheme.error
+                                        text = stringResource(id = R.string.error),
+                                        style = MaterialTheme.typography.headlineSmall,
+                                        color = MaterialTheme.colorScheme.error
                                 )
                                 Text(
-                                    text = uiState.error,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.padding(top = 8.dp)
+                                        text = uiState.error,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        modifier = Modifier.padding(top = 8.dp)
                                 )
                             }
                         }
                     }
-
                     uiState.channels.isEmpty() && !uiState.isLoading -> {
                         Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
                         ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
-                                    text = stringResource(id = R.string.no_channels_loaded),
-                                    style = MaterialTheme.typography.headlineSmall
+                                        text = stringResource(id = R.string.no_channels_loaded),
+                                        style = MaterialTheme.typography.headlineSmall
                                 )
                                 Text(
-                                    text = stringResource(id = R.string.add_and_load_playlist),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.padding(top = 8.dp)
+                                        text = stringResource(id = R.string.add_and_load_playlist),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        modifier = Modifier.padding(top = 8.dp)
                                 )
                                 Button(
-                                    onClick = onShowSavedPlaylists,
-                                    modifier = Modifier.padding(top = 16.dp)
-                                ) {
-                                    Text(stringResource(id = R.string.playlists))
-                                }
+                                        onClick = onShowSavedPlaylists,
+                                        modifier = Modifier.padding(top = 16.dp)
+                                ) { Text(stringResource(id = R.string.playlists)) }
                             }
                         }
                     }
-
                     uiState.selectedCategory != null -> {
-                        val filteredChannels by remember(
-                            uiState.channels,
-                            uiState.selectedCategory,
-                            uiState.searchQuery
-                        ) {
-                            derivedStateOf {
-                                uiState.channels.filter { channel ->
-                                    channel.group == uiState.selectedCategory && (uiState.searchQuery.isBlank() || channel.name.contains(
-                                        uiState.searchQuery,
-                                        ignoreCase = true
-                                    ))
+                        val filteredChannels by
+                                remember(
+                                        uiState.channels,
+                                        uiState.selectedCategory,
+                                        uiState.searchQuery
+                                ) {
+                                    derivedStateOf {
+                                        uiState.channels.filter { channel ->
+                                            channel.group == uiState.selectedCategory &&
+                                                    (uiState.searchQuery.isBlank() ||
+                                                            channel.name.contains(
+                                                                    uiState.searchQuery,
+                                                                    ignoreCase = true
+                                                            ))
+                                        }
+                                    }
                                 }
-                            }
-                        }
                         if (filteredChannels.isEmpty()) {
-                                Box(
+                            Box(
                                     modifier = Modifier.fillMaxSize(),
                                     contentAlignment = Alignment.Center
-                                ) {
-                                Text(stringResource(id = R.string.no_channels_match_in_category))
-                            }
+                            ) { Text(stringResource(id = R.string.no_channels_match_in_category)) }
                         } else {
                             val configuration = LocalConfiguration.current
                             if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                                val gridState = rememberLazyGridState(
-                                    initialFirstVisibleItemIndex = uiState.channelListFirstVisibleIndex ?: 0,
-                                    initialFirstVisibleItemScrollOffset = uiState.channelListFirstVisibleScrollOffset ?: 0
-                                )
+                                val gridState =
+                                        rememberLazyGridState(
+                                                initialFirstVisibleItemIndex =
+                                                        uiState.channelListFirstVisibleIndex ?: 0,
+                                                initialFirstVisibleItemScrollOffset =
+                                                        uiState.channelListFirstVisibleScrollOffset
+                                                                ?: 0
+                                        )
 
                                 LazyVerticalGrid(
-                                    state = gridState,
-                                    columns = GridCells.Fixed(3),
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(horizontal = 8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    content = {
-                                        items(filteredChannels, key = { it.name }) { channel ->
-                                            ChannelItem(
-                                                channel = channel,
-                                                onChannelClick = {
-                                                    onSaveScroll(gridState.firstVisibleItemIndex, gridState.firstVisibleItemScrollOffset)
-                                                    onChannelClick(channel)
-                                                },
-                                                modifier = Modifier.fillMaxWidth(),
-                                                compact = true
-                                            )
+                                        state = gridState,
+                                        columns = GridCells.Fixed(3),
+                                        modifier =
+                                                Modifier.fillMaxSize().padding(horizontal = 8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                        content = {
+                                            items(filteredChannels, key = { it.name }) { channel ->
+                                                ChannelItem(
+                                                        channel = channel,
+                                                        onChannelClick = {
+                                                            onSaveScroll(
+                                                                    gridState.firstVisibleItemIndex,
+                                                                    gridState
+                                                                            .firstVisibleItemScrollOffset
+                                                            )
+                                                            onChannelClick(channel)
+                                                        },
+                                                        modifier = Modifier.fillMaxWidth(),
+                                                        compact = true
+                                                )
+                                            }
                                         }
-                                    }
                                 )
                             } else {
-                                val listState = rememberLazyListState(
-                                    initialFirstVisibleItemIndex = uiState.channelListFirstVisibleIndex ?: 0,
-                                    initialFirstVisibleItemScrollOffset = uiState.channelListFirstVisibleScrollOffset ?: 0
-                                )
+                                val listState =
+                                        rememberLazyListState(
+                                                initialFirstVisibleItemIndex =
+                                                        uiState.channelListFirstVisibleIndex ?: 0,
+                                                initialFirstVisibleItemScrollOffset =
+                                                        uiState.channelListFirstVisibleScrollOffset
+                                                                ?: 0
+                                        )
 
                                 LazyColumn(state = listState) {
                                     items(filteredChannels, key = { it.name }) { channel ->
                                         ChannelItem(
-                                            channel = channel,
-                                            onChannelClick = {
-                                                onSaveScroll(listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset)
-                                                onChannelClick(channel)
-                                            }
+                                                channel = channel,
+                                                onChannelClick = {
+                                                    onSaveScroll(
+                                                            listState.firstVisibleItemIndex,
+                                                            listState.firstVisibleItemScrollOffset
+                                                    )
+                                                    onChannelClick(channel)
+                                                }
                                         )
                                     }
                                 }
@@ -382,169 +413,155 @@ fun ChannelListScreen(
                     }
                 }
 
-
-                if (uiState.isLoading && (uiState.channels.isNotEmpty() || uiState.loadingStatus.isNotBlank())) {
+                if (uiState.isLoading &&
+                                (uiState.channels.isNotEmpty() ||
+                                        uiState.loadingStatus.isNotBlank())
+                ) {
                     LoadingOverlay(
-                        status = uiState.loadingStatus,
-                        progress = uiState.loadingProgress,
-                        hasContent = uiState.channels.isNotEmpty()
+                            status = uiState.loadingStatus,
+                            progress = uiState.loadingProgress,
+                            hasContent = uiState.channels.isNotEmpty()
                     )
                 }
-
 
                 if (uiState.isLoading && uiState.channels.isEmpty()) {
                     EnhancedLoadingScreen(
-                        status = uiState.loadingStatus,
-                        progress = uiState.loadingProgress
+                            status = uiState.loadingStatus,
+                            progress = uiState.loadingProgress
                     )
                 }
             }
         }
-
-
     }
-
 }
 
 @Composable
-fun EnhancedLoadingScreen(
-    status: String,
-    progress: Float
-) {
+fun EnhancedLoadingScreen(status: String, progress: Float) {
     val infiniteTransition = rememberInfiniteTransition(label = "loading")
-    
-   
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ), label = "rotation"
-    )
-    
-   
-    val alpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.7f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ), label = "pulse"
-    )
-    
-   
-    val scale by infiniteTransition.animateFloat(
-        initialValue = 0.95f,
-        targetValue = 1.05f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ), label = "scale"
-    )
-    
+
+    val rotation by
+            infiniteTransition.animateFloat(
+                    initialValue = 0f,
+                    targetValue = 360f,
+                    animationSpec =
+                            infiniteRepeatable(
+                                    animation = tween(2000, easing = LinearEasing),
+                                    repeatMode = RepeatMode.Restart
+                            ),
+                    label = "rotation"
+            )
+
+    val alpha by
+            infiniteTransition.animateFloat(
+                    initialValue = 0.3f,
+                    targetValue = 0.7f,
+                    animationSpec =
+                            infiniteRepeatable(
+                                    animation = tween(1500, easing = FastOutSlowInEasing),
+                                    repeatMode = RepeatMode.Reverse
+                            ),
+                    label = "pulse"
+            )
+
+    val scale by
+            infiniteTransition.animateFloat(
+                    initialValue = 0.95f,
+                    targetValue = 1.05f,
+                    animationSpec =
+                            infiniteRepeatable(
+                                    animation = tween(1000, easing = FastOutSlowInEasing),
+                                    repeatMode = RepeatMode.Reverse
+                            ),
+                    label = "scale"
+            )
+
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                MaterialTheme.colorScheme.surface.copy(alpha = alpha)
-            ),
-        contentAlignment = Alignment.Center
+            modifier =
+                    Modifier.fillMaxSize()
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = alpha)),
+            contentAlignment = Alignment.Center
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-           
             Card(
-                modifier = Modifier
-                    .size(120.dp)
-                    .scale(scale),
-                shape = RoundedCornerShape(60.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                    modifier = Modifier.size(120.dp).scale(scale),
+                    shape = RoundedCornerShape(60.dp),
+                    colors =
+                            CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                            ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Icon(
-                        imageVector = Icons.Default.PlayArrow,
-                        contentDescription = stringResource(id = com.example.ptv.R.string.loading),
-                        modifier = Modifier
-                            .size(48.dp)
-                            .rotate(rotation),
-                        tint = MaterialTheme.colorScheme.primary
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription =
+                                    stringResource(id = com.example.ptv.R.string.loading),
+                            modifier = Modifier.size(48.dp).rotate(rotation),
+                            tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
-            
-           
+
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-               
                 if (progress > 0f) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         LinearProgressIndicator(
-                            progress = { progress },
-                            modifier = Modifier
-                                                        .width(200.dp)
-                                                        .height(8.dp),
-                            color = MaterialTheme.colorScheme.primary,
-                            trackColor = MaterialTheme.colorScheme.primaryContainer,
-                            strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
+                                progress = { progress },
+                                modifier = Modifier.width(200.dp).height(8.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                trackColor = MaterialTheme.colorScheme.primaryContainer,
+                                strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "${(progress * 100).toInt()}%",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                text = "${(progress * 100).toInt()}%",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
                     }
                 } else {
-                   
+
                     CircularProgressIndicator(
-                        modifier = Modifier.size(32.dp),
-                        color = MaterialTheme.colorScheme.primary
+                            modifier = Modifier.size(32.dp),
+                            color = MaterialTheme.colorScheme.primary
                     )
                 }
-                
-               
+
                 if (status.isNotBlank()) {
                     Text(
-                        text = status,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.alpha(0.8f)
+                            text = status,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.alpha(0.8f)
                     )
                 } else {
                     Text(
-                        text = stringResource(id = com.example.ptv.R.string.loading_iptv_channels),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.alpha(0.8f)
+                            text =
+                                    stringResource(
+                                            id = com.example.ptv.R.string.loading_iptv_channels
+                                    ),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.alpha(0.8f)
                     )
                 }
-                
-               
+
                 val currentTip = remember { FunFacts.randomFact() }
 
                 Text(
-                    text = currentTip,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .padding(horizontal = 32.dp)
-                        .alpha(0.7f)
+                        text = currentTip,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 32.dp).alpha(0.7f)
                 )
             }
         }
@@ -552,46 +569,40 @@ fun EnhancedLoadingScreen(
 }
 
 @Composable
-fun LoadingOverlay(
-    status: String,
-    progress: Float,
-    hasContent: Boolean
-) {
+fun LoadingOverlay(status: String, progress: Float, hasContent: Boolean) {
     if (hasContent) {
-       
+
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
-                )
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
+                modifier =
+                        Modifier.fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.95f))
+                                .padding(16.dp),
+                contentAlignment = Alignment.Center
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 if (progress > 0f) {
                     CircularProgressIndicator(
-                        progress = { progress },
-                        modifier = Modifier.size(24.dp),
-                        color = ProgressIndicatorDefaults.circularColor,
-                        strokeWidth = 3.dp,
-                        trackColor = ProgressIndicatorDefaults.circularIndeterminateTrackColor,
-                        strokeCap = ProgressIndicatorDefaults.CircularDeterminateStrokeCap,
+                            progress = { progress },
+                            modifier = Modifier.size(24.dp),
+                            color = ProgressIndicatorDefaults.circularColor,
+                            strokeWidth = 3.dp,
+                            trackColor = ProgressIndicatorDefaults.circularIndeterminateTrackColor,
+                            strokeCap = ProgressIndicatorDefaults.CircularDeterminateStrokeCap,
                     )
                 } else {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        strokeWidth = 3.dp
-                    )
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 3.dp)
                 }
 
                 Text(
-                    text = status.ifBlank { stringResource(id = com.example.ptv.R.string.loading_from_cache) },
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                        text =
+                                status.ifBlank {
+                                    stringResource(id = com.example.ptv.R.string.loading_from_cache)
+                                },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }

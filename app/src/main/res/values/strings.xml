@@ -25,7 +25,7 @@
     <string name="back">Back</string>
     <string name="add_playlist">Add Playlist</string>
     <string name="add_m3u_url">Add M3U URL</string>
-    <string name="add_xtream_codes">Add Xtream Codes</string>
+    <string name="add_xtream_code">Add Xtream-Code</string>
     <string name="no_playlists_saved">No playlists saved.</string>
 
     <string name="active">Active</string>
@@ -33,7 +33,6 @@
     <string name="load_now">Load now</string>
     <string name="delete">Delete</string>
 
-    <string name="add_m3u_playlist">Add M3U Playlist</string>
     <string name="display_name">Display name</string>
     <string name="m3u_url">M3U URL</string>
     <string name="save">Save</string>
