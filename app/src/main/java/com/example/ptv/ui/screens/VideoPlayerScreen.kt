@@ -1,4 +1,3 @@
-@file:Suppress("DEPRECATION")
 package com.example.ptv.ui.screens
 
 import androidx.activity.compose.BackHandler
@@ -23,12 +22,22 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import com.example.ptv.model.Channel
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.ui.PlayerView
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.PlaybackException
-import com.google.android.exoplayer2.upstream.HttpDataSource
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.common.MediaItem
+import androidx.media3.ui.PlayerView
+import androidx.media3.common.Player
+import androidx.media3.common.PlaybackException
+import androidx.media3.datasource.HttpDataSource
+import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.datasource.okhttp.OkHttpDataSource
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import java.util.concurrent.TimeUnit
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.common.MimeTypes
+import androidx.media3.exoplayer.DefaultLoadControl
+import android.util.Log
+import androidx.media3.exoplayer.analytics.AnalyticsListener
 import com.example.ptv.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,6 +49,7 @@ fun VideoPlayerScreen(
 ) {
     val context = LocalContext.current
     val activity = context as? android.app.Activity
+    val TAG = "VideoPlayerScreen"
 
     DisposableEffect(activity) {
         val window = activity?.window
@@ -60,12 +70,46 @@ fun VideoPlayerScreen(
     var httpErrorCode by remember { mutableStateOf<Int?>(null) }
 
     val exoPlayer = remember(channel.url) {
-        ExoPlayer.Builder(context).build().apply {
-            setMediaItem(MediaItem.fromUri(channel.url))
+        // Use OkHttp data source with logging and timeouts to avoid silent stalls
+        val logging = HttpLoggingInterceptor(object : HttpLoggingInterceptor.Logger {
+            override fun log(message: String) {
+                Log.d(TAG, "OkHttp: $message")
+            }
+        }).apply { level = HttpLoggingInterceptor.Level.BASIC }
+
+        val okHttpClient = OkHttpClient.Builder()
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .addInterceptor(logging)
+            .build()
+
+        val dataSourceFactory = OkHttpDataSource.Factory(okHttpClient)
+
+        val mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory)
+
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(
+                /* minBufferMs = */ 15_000,
+                /* maxBufferMs = */ 50_000,
+                /* bufferForPlaybackMs = */ 2_500,
+                /* bufferForPlaybackAfterRebufferMs = */ 5_000
+            )
+            .build()
+
+        ExoPlayer.Builder(context)
+            .setMediaSourceFactory(mediaSourceFactory)
+            .setLoadControl(loadControl)
+            .build().apply {
+                val mediaItemBuilder = MediaItem.Builder().setUri(channel.url)
+                if (channel.url.contains(".m3u8", ignoreCase = true)) {
+                    mediaItemBuilder.setMimeType(MimeTypes.APPLICATION_M3U8)
+                }
+                setMediaItem(mediaItemBuilder.build())
             prepare()
             playWhenReady = true
             addListener(object : Player.Listener {
                 override fun onPlayerError(error: PlaybackException) {
+                    Log.w(TAG, "onPlayerError: ${error.message}")
                     var cause: Throwable? = error.cause
                     var foundCode: Int? = null
                     while (cause != null && foundCode == null) {
@@ -74,11 +118,21 @@ fun VideoPlayerScreen(
                         }
                         cause = cause.cause
                     }
-                    if (foundCode != null) {
-                        httpErrorCode = foundCode
-                    } else {                    
-                        httpErrorCode = null
-                    }
+                    httpErrorCode = foundCode
+                }
+
+                override fun onIsLoadingChanged(isLoading: Boolean) {
+                    Log.d(TAG, "onIsLoadingChanged: isLoading=$isLoading")
+                }
+
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    Log.d(TAG, "onPlaybackStateChanged: state=$playbackState")
+                }
+            })
+
+            addAnalyticsListener(object : AnalyticsListener {
+                override fun onBandwidthEstimate(eventTime: AnalyticsListener.EventTime, totalLoadTimeMs: Int, bytesLoaded: Long, bitrateEstimate: Long) {
+                    Log.d(TAG, "Analytics onBandwidthEstimate: bytesLoaded=$bytesLoaded bitrateEstimate=$bitrateEstimate")
                 }
             })
         }
@@ -116,6 +170,22 @@ fun VideoPlayerScreen(
         }
     }
 
+    LaunchedEffect(exoPlayer) {
+        while (true) {
+            try {
+                val pos = exoPlayer.currentPosition
+                val bufferedPos = exoPlayer.bufferedPosition
+                val bufferedPct = exoPlayer.bufferedPercentage
+                val isLoading = exoPlayer.isLoading
+                val state = exoPlayer.playbackState
+                Log.d(TAG, "bufferMetrics: pos=$pos bufferedPos=$bufferedPos bufferedPct=$bufferedPct isLoading=$isLoading state=$state")
+            } catch (t: Throwable) {
+                Log.w(TAG, "bufferMetrics: exception: ${t.message}")
+            }
+            delay(1000L)
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -127,17 +197,21 @@ fun VideoPlayerScreen(
                     player = exoPlayer
                     useController = true
                     setControllerShowTimeoutMs(3000)
-                    setControllerVisibilityListener { visibility ->
-                        controlsVisible = visibility == android.view.View.VISIBLE
-                    }
+                    setControllerVisibilityListener(
+                        PlayerView.ControllerVisibilityListener { visible ->
+                            controlsVisible = (visible == android.view.View.VISIBLE)
+                        }
+                    )
                 }
             },
             modifier = Modifier.fillMaxSize(),
             update = { view ->
                 view.setControllerShowTimeoutMs(3000)
-                view.setControllerVisibilityListener { visibility ->
-                    controlsVisible = visibility == android.view.View.VISIBLE
-                }
+                view.setControllerVisibilityListener(
+                    PlayerView.ControllerVisibilityListener { visible ->
+                        controlsVisible = (visible == android.view.View.VISIBLE)
+                    }
+                )
             }
         )
 
@@ -182,7 +256,7 @@ fun VideoPlayerScreen(
                         colors = IconButtonDefaults.iconButtonColors(contentColor = Color.White)
                     ) {
                         Icon(
-                            painter = painterResource(id = com.example.ptv.R.drawable.rotate),
+                            painter = painterResource(id = R.drawable.rotate),
                             contentDescription = stringResource(id = R.string.toggle_rotation),
                             modifier = Modifier.size(20.dp)
                         )
