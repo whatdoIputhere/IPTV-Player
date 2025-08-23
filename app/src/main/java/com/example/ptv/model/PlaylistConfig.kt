@@ -7,5 +7,5 @@ data class PlaylistConfig(
     val id: String,
     val displayName: String,
     val type: String,
-    val data: String
+    val data: String,
 )

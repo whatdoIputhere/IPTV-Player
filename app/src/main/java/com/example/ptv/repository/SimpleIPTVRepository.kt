@@ -9,7 +9,6 @@ import com.example.ptv.model.XtreamConfig
 import com.example.ptv.parser.M3UParser
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,10 +18,11 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.IOException
 
 class SimpleIPTVRepository(context: Context) {
     private val playlistPrefs: SharedPreferences =
-            context.getSharedPreferences("saved_playlists", Context.MODE_PRIVATE)
+        context.getSharedPreferences("saved_playlists", Context.MODE_PRIVATE)
     private val activePlaylistKey = "active_playlist_id"
 
     fun savePlaylistConfig(playlist: com.example.ptv.model.PlaylistConfig) {
@@ -65,9 +65,9 @@ class SimpleIPTVRepository(context: Context) {
     private val client = OkHttpClient()
     private val parser = M3UParser()
     private val prefs: SharedPreferences =
-            context.getSharedPreferences("xtream_configs", Context.MODE_PRIVATE)
+        context.getSharedPreferences("xtream_configs", Context.MODE_PRIVATE)
     private val playlistCache: SharedPreferences =
-            context.getSharedPreferences("playlist_cache", Context.MODE_PRIVATE)
+        context.getSharedPreferences("playlist_cache", Context.MODE_PRIVATE)
     private val gson = Gson()
 
     private var _cachedChannels = MutableStateFlow<List<Channel>>(emptyList())
@@ -98,25 +98,25 @@ class SimpleIPTVRepository(context: Context) {
     fun getActiveXtreamConfig(): Flow<XtreamConfig?> = _activeXtreamConfig.asStateFlow()
 
     suspend fun loadChannelsFromM3U(url: String): List<Channel> =
-            withContext(Dispatchers.IO) {
-                try {
-                    val request = Request.Builder().url(url).build()
+        withContext(Dispatchers.IO) {
+            try {
+                val request = Request.Builder().url(url).build()
 
-                    client.newCall(request).execute().use { response ->
-                        if (!response.isSuccessful) {
-                            throw IOException("Failed to fetch playlist: ${response.code}")
-                        }
-                        val playlistContent = response.body?.string().orEmpty()
-                        val channels = parser.parse(playlistContent)
-                        _cachedChannels.value = channels
-                        channels
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) {
+                        throw IOException("Failed to fetch playlist: ${response.code}")
                     }
-                } catch (e: Exception) {
-                    println("Error loading M3U playlist: ${e.message}")
-
-                    _cachedChannels.value
+                    val playlistContent = response.body?.string().orEmpty()
+                    val channels = parser.parse(playlistContent)
+                    _cachedChannels.value = channels
+                    channels
                 }
+            } catch (e: Exception) {
+                println("Error loading M3U playlist: ${e.message}")
+
+                _cachedChannels.value
             }
+        }
 
     fun getXtreamConfig(): XtreamConfig? {
         val host = prefs.getString("host", null)
@@ -125,7 +125,9 @@ class SimpleIPTVRepository(context: Context) {
 
         return if (host != null && username != null && password != null) {
             XtreamConfig(1, "Default", host, username, password, isActive = true)
-        } else null
+        } else {
+            null
+        }
     }
 
     fun clearXtreamConfig() {
@@ -136,107 +138,105 @@ class SimpleIPTVRepository(context: Context) {
     }
 
     suspend fun loadChannelsFromXtream(
-            config: XtreamConfig,
-            forceRefresh: Boolean = false
+        config: XtreamConfig,
+        forceRefresh: Boolean = false,
     ): List<Channel> =
-            withContext(Dispatchers.IO) {
-                try {
-
-                    if (!forceRefresh) {
-
-                        val currentTime = System.currentTimeMillis()
-                        if (memoryCache != null &&
-                                        (currentTime - memoryCacheTime) < memoryCacheValidityMs
-                        ) {
-                            println(
-                                    "DEBUG: Returning from memory cache (${memoryCache!!.size} channels)"
-                            )
-                            _cachedChannels.value = memoryCache!!
-                            return@withContext memoryCache!!
-                        }
-
-                        val cachedChannels =
-                                loadPlaylistFromCache("xtream_${config.host}_${config.username}")
-                        if (cachedChannels.isNotEmpty()) {
-                            println(
-                                    "DEBUG: Returning from persistent cache (${cachedChannels.size} channels)"
-                            )
-                            memoryCache = cachedChannels
-                            memoryCacheTime = currentTime
-                            _cachedChannels.value = cachedChannels
-                            return@withContext cachedChannels
-                        }
-                    }
-
-                    println("DEBUG: Loading fresh data from Xtream API")
-
-                    val base = if (config.host.endsWith('/')) config.host else config.host + "/"
-                    val retrofit =
-                            Retrofit.Builder()
-                                    .baseUrl(base)
-                                    .addConverterFactory(GsonConverterFactory.create())
-                                    .build()
-
-                    val service = retrofit.create(XtreamApiService::class.java)
-
-                    val categoriesResponse =
-                            service.getLiveCategories(config.username, config.password)
-                    val categoryMap =
-                            if (categoriesResponse.isSuccessful && categoriesResponse.body() != null
-                            ) {
-                                categoriesResponse.body()!!.associate {
-                                    it.category_id to it.category_name
-                                }
-                            } else {
-                                emptyMap()
-                            }
-
-                    val response = service.getLiveStreams(config.username, config.password)
-                    if (!response.isSuccessful || response.body() == null) {
-                        throw IOException("Failed to fetch Xtream channels: ${response.code()}")
-                    }
-
-                    val xtreamChannels: List<XtreamChannel> = response.body()!!
-
-                    val channels =
-                            xtreamChannels.map { ch ->
-                                val categoryName = categoryMap[ch.category_id] ?: "Uncategorized"
-                                val host = base.trimEnd('/')
-                                Channel(
-                                        name = ch.name,
-                                        url =
-                                                "$host/live/${config.username}/${config.password}/${ch.stream_id}.m3u8",
-                                        logo = ch.stream_icon,
-                                        group = categoryName
-                                )
-                            }
-
-                    savePlaylistToCache("xtream_${config.host}_${config.username}", channels)
-
+        withContext(Dispatchers.IO) {
+            try {
+                if (!forceRefresh) {
                     val currentTime = System.currentTimeMillis()
-                    memoryCache = channels
-                    memoryCacheTime = currentTime
+                    if (memoryCache != null &&
+                        (currentTime - memoryCacheTime) < memoryCacheValidityMs
+                    ) {
+                        println(
+                            "DEBUG: Returning from memory cache (${memoryCache!!.size} channels)",
+                        )
+                        _cachedChannels.value = memoryCache!!
+                        return@withContext memoryCache!!
+                    }
 
-                    _cachedChannels.value = channels
+                    val cachedChannels =
+                        loadPlaylistFromCache("xtream_${config.host}_${config.username}")
+                    if (cachedChannels.isNotEmpty()) {
+                        println(
+                            "DEBUG: Returning from persistent cache (${cachedChannels.size} channels)",
+                        )
+                        memoryCache = cachedChannels
+                        memoryCacheTime = currentTime
+                        _cachedChannels.value = cachedChannels
+                        return@withContext cachedChannels
+                    }
+                }
 
-                    channels
-                } catch (e: Exception) {
-                    println("Error loading Xtream channels: ${e.message}")
+                println("DEBUG: Loading fresh data from Xtream API")
 
-                    if (!forceRefresh) {
-                        val cachedChannels =
-                                loadPlaylistFromCache("xtream_${config.host}_${config.username}")
-                        if (cachedChannels.isNotEmpty()) {
-                            _cachedChannels.value = cachedChannels
-                            cachedChannels
-                        } else {
-                            emptyList()
+                val base = if (config.host.endsWith('/')) config.host else config.host + "/"
+                val retrofit =
+                    Retrofit.Builder()
+                        .baseUrl(base)
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build()
+
+                val service = retrofit.create(XtreamApiService::class.java)
+
+                val categoriesResponse =
+                    service.getLiveCategories(config.username, config.password)
+                val categoryMap =
+                    if (categoriesResponse.isSuccessful && categoriesResponse.body() != null
+                    ) {
+                        categoriesResponse.body()!!.associate {
+                            it.category_id to it.category_name
                         }
+                    } else {
+                        emptyMap()
+                    }
+
+                val response = service.getLiveStreams(config.username, config.password)
+                if (!response.isSuccessful || response.body() == null) {
+                    throw IOException("Failed to fetch Xtream channels: ${response.code()}")
+                }
+
+                val xtreamChannels: List<XtreamChannel> = response.body()!!
+
+                val channels =
+                    xtreamChannels.map { ch ->
+                        val categoryName = categoryMap[ch.category_id] ?: "Uncategorized"
+                        val host = base.trimEnd('/')
+                        Channel(
+                            name = ch.name,
+                            url =
+                            "$host/live/${config.username}/${config.password}/${ch.stream_id}.m3u8",
+                            logo = ch.stream_icon,
+                            group = categoryName,
+                        )
+                    }
+
+                savePlaylistToCache("xtream_${config.host}_${config.username}", channels)
+
+                val currentTime = System.currentTimeMillis()
+                memoryCache = channels
+                memoryCacheTime = currentTime
+
+                _cachedChannels.value = channels
+
+                channels
+            } catch (e: Exception) {
+                println("Error loading Xtream channels: ${e.message}")
+
+                if (!forceRefresh) {
+                    val cachedChannels =
+                        loadPlaylistFromCache("xtream_${config.host}_${config.username}")
+                    if (cachedChannels.isNotEmpty()) {
+                        _cachedChannels.value = cachedChannels
+                        cachedChannels
                     } else {
                         emptyList()
                     }
+                } else {
+                    emptyList()
                 }
             }
+        }
 
     private fun loadPlaylistFromCache(key: String): List<Channel> {
         val cacheKey = "${key}_data"
@@ -252,7 +252,6 @@ class SimpleIPTVRepository(context: Context) {
         val maxCacheAgeMs = 15 * 24 * 60 * 60 * 1000L
 
         if (cacheAgeMs > maxCacheAgeMs) {
-
             playlistCache.edit().remove(cacheKey).remove(timestampKey).apply()
             return emptyList()
         }
@@ -274,10 +273,10 @@ class SimpleIPTVRepository(context: Context) {
 
         val json = gson.toJson(channels)
         playlistCache
-                .edit()
-                .putString(cacheKey, json)
-                .putLong(timestampKey, System.currentTimeMillis())
-                .apply()
+            .edit()
+            .putString(cacheKey, json)
+            .putLong(timestampKey, System.currentTimeMillis())
+            .apply()
     }
 
     fun clearAllPlaylistCaches() {
@@ -288,12 +287,11 @@ class SimpleIPTVRepository(context: Context) {
     suspend fun loadChannelsFromUrl(url: String) = loadChannelsFromM3U(url)
 
     fun saveXtreamConfig(config: XtreamConfig): Long {
-
         prefs.edit()
-                .putString("host", config.host)
-                .putString("username", config.username)
-                .putString("password", config.password)
-                .apply()
+            .putString("host", config.host)
+            .putString("username", config.username)
+            .putString("password", config.password)
+            .apply()
 
         val activeConfig = config.copy(isActive = true)
         _activeXtreamConfig.value = activeConfig
@@ -304,7 +302,6 @@ class SimpleIPTVRepository(context: Context) {
     }
 
     fun setActiveXtreamConfig(id: Long) {
-
         val current = getXtreamConfig()
         if (current != null) {
             val updated = current.copy(id = id, isActive = true)
@@ -315,7 +312,6 @@ class SimpleIPTVRepository(context: Context) {
     }
 
     fun deleteXtreamConfig(config: XtreamConfig) {
-
         println("DEBUG: Deleting Xtream config: ${config.host}")
         clearXtreamConfig()
         _activeXtreamConfig.value = null
@@ -323,9 +319,9 @@ class SimpleIPTVRepository(context: Context) {
     }
 
     suspend fun testXtreamConnection(
-            host: String,
-            username: String,
-            password: String
+        host: String,
+        username: String,
+        password: String,
     ): Result<Boolean> {
         return try {
             val config = XtreamConfig(0, "Test", host, username, password)

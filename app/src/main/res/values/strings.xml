@@ -16,6 +16,7 @@
     <string name="no_channels_match_in_category">No channels match your search in this category</string>
 
     <string name="error">Error</string>
+    <string name="error_with_message">Error: %1$s</string>
 
     <string name="loading_iptv_channels">Loading IPTV channels...</string>
     <string name="loading_from_cache">Loading from cache...</string>
@@ -47,4 +48,8 @@
     <string name="toggle_rotation">Toggle rotation</string>
     <string name="stream_unavailable_message">Stream could not be played</string>
     <string name="server_returned_http">Server returned HTTP %1$d. The stream is unavailable.</string>
+
+    <string name="exit">Exit</string>
+    <string name="exit_app_title">Exit App</string>
+    <string name="exit_app_message">Are you sure you want to exit the app?</string>
 </resources>

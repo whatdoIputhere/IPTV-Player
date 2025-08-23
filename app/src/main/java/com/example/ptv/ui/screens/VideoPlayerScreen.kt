@@ -1,51 +1,59 @@
 package com.example.ptv.ui.screens
-
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import kotlinx.coroutines.delay
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.res.painterResource
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import com.example.ptv.model.Channel
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.common.MediaItem
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.ui.PlayerView
-import androidx.media3.common.Player
-import androidx.media3.common.PlaybackException
-import androidx.media3.datasource.HttpDataSource
-import androidx.media3.datasource.DefaultHttpDataSource
-import androidx.media3.datasource.okhttp.OkHttpDataSource
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import java.util.concurrent.TimeUnit
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import androidx.media3.common.MimeTypes
-import androidx.media3.exoplayer.DefaultLoadControl
-import android.util.Log
-import androidx.media3.exoplayer.analytics.AnalyticsListener
 import com.example.ptv.R
+import com.example.ptv.model.Channel
+import com.example.ptv.viewmodel.VideoPlayerViewModel
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VideoPlayerScreen(
     channel: Channel,
     onBackClick: () -> Unit,
-    orientationBeforeStream: Int? = null
+    orientationBeforeStream: Int? = null,
 ) {
     val context = LocalContext.current
     val activity = context as? android.app.Activity
@@ -123,7 +131,7 @@ fun VideoPlayerScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(Color.Black),
     ) {
         AndroidView(
             factory = { ctx ->
@@ -134,7 +142,7 @@ fun VideoPlayerScreen(
                     setControllerVisibilityListener(
                         PlayerView.ControllerVisibilityListener { visible ->
                             controlsVisible = (visible == android.view.View.VISIBLE)
-                        }
+                        },
                     )
                 }
             },
@@ -144,9 +152,9 @@ fun VideoPlayerScreen(
                 view.setControllerVisibilityListener(
                     PlayerView.ControllerVisibilityListener { visible ->
                         controlsVisible = (visible == android.view.View.VISIBLE)
-                    }
+                    },
                 )
-            }
+            },
         )
 
         if (controlsVisible) {
@@ -155,24 +163,24 @@ fun VideoPlayerScreen(
                     .align(Alignment.TopStart)
                     .padding(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.Black.copy(alpha = 0.7f)
+                    containerColor = Color.Black.copy(alpha = 0.7f),
                 ),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(8.dp),
             ) {
                 Row(
                     modifier = Modifier.padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     IconButton(
                         onClick = {
                             restoreAndUnlock(orientationBeforeStream)
                             onBackClick()
                         },
-                        colors = IconButtonDefaults.iconButtonColors(contentColor = Color.White)
+                        colors = IconButtonDefaults.iconButtonColors(contentColor = Color.White),
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(id = R.string.back)
+                            contentDescription = stringResource(id = R.string.back),
                         )
                     }
 
@@ -187,12 +195,12 @@ fun VideoPlayerScreen(
                             activity?.requestedOrientation = newOrientation
                             controlsVisible = false
                         },
-                        colors = IconButtonDefaults.iconButtonColors(contentColor = Color.White)
+                        colors = IconButtonDefaults.iconButtonColors(contentColor = Color.White),
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.rotate),
                             contentDescription = stringResource(id = R.string.toggle_rotation),
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(20.dp),
                         )
                     }
 
@@ -203,13 +211,13 @@ fun VideoPlayerScreen(
                             text = channel.name,
                             color = Color.White,
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
                         )
                         if (channel.group.isNotEmpty()) {
                             Text(
                                 text = channel.group,
                                 color = Color.White.copy(alpha = 0.8f),
-                                style = MaterialTheme.typography.bodySmall
+                                style = MaterialTheme.typography.bodySmall,
                             )
                         }
                     }
@@ -222,27 +230,27 @@ fun VideoPlayerScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.Black.copy(alpha = 0.6f)),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Card(
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.DarkGray.copy(alpha = 0.85f))
+                    colors = CardDefaults.cardColors(containerColor = Color.DarkGray.copy(alpha = 0.85f)),
                 ) {
                     Column(
                         modifier = Modifier.padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
                         Text(
                             text = stringResource(id = R.string.stream_unavailable_message),
                             color = Color.White,
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
                         )
                         Text(
                             text = stringResource(id = R.string.server_returned_http, httpErrorCode ?: 0),
                             color = Color.White.copy(alpha = 0.85f),
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.bodyMedium,
                         )
                         Button(onClick = {
                             restoreAndUnlock(orientationBeforeStream)

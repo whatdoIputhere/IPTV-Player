@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("kotlin-kapt")
+    id("org.jlleitschuh.gradle.ktlint")
 }
 
 android {
@@ -24,7 +25,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -34,8 +35,8 @@ android {
     }
     kotlinOptions {
         jvmTarget = "11"
-   
-    languageVersion = "1.9"
+
+        languageVersion = "1.9"
     }
     buildFeatures {
         compose = true
@@ -52,7 +53,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    
+
     implementation("androidx.media3:media3-exoplayer:1.1.0")
     implementation("androidx.media3:media3-ui:1.1.0")
     implementation("androidx.media3:media3-exoplayer-hls:1.1.0")
@@ -62,25 +63,20 @@ dependencies {
     implementation(libs.retrofit.converter.gson)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
-    
-   
+
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
-    
-   
+
     implementation(libs.kotlinx.coroutines.android)
-    
-   
+
     implementation(libs.coil.compose)
-    
-   
+
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     kapt(libs.room.compiler)
-    
-   
+
     implementation(libs.gson)
-    
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -88,4 +84,19 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+ktlint {
+    version.set("0.50.0")
+    android.set(true)
+    ignoreFailures.set(false)
+    enableExperimentalRules.set(false)
+    reporters {
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
+    }
+}
+
+tasks.matching { it.name == "preBuild" }.configureEach {
+    dependsOn("ktlintCheck")
 }

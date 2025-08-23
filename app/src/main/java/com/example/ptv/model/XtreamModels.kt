@@ -12,12 +12,12 @@ data class XtreamConfig(
     val username: String,
     val password: String,
     val isActive: Boolean = false,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
 )
 
 data class XtreamInfo(
     val userInfo: UserInfo? = null,
-    val serverInfo: ServerInfo? = null
+    val serverInfo: ServerInfo? = null,
 )
 
 data class UserInfo(
@@ -31,7 +31,7 @@ data class UserInfo(
     val active_cons: String? = null,
     val created_at: String? = null,
     val max_connections: String? = null,
-    val allowed_output_formats: List<String>? = null
+    val allowed_output_formats: List<String>? = null,
 )
 
 data class ServerInfo(
@@ -42,13 +42,13 @@ data class ServerInfo(
     val rtmp_port: String? = null,
     val timezone: String? = null,
     val timestamp_now: Long? = null,
-    val time_now: String? = null
+    val time_now: String? = null,
 )
 
 data class XtreamCategory(
     val category_id: String,
     val category_name: String,
-    val parent_id: Int = 0
+    val parent_id: Int = 0,
 )
 
 data class XtreamChannel(
@@ -64,5 +64,5 @@ data class XtreamChannel(
     val custom_sid: String? = null,
     val tv_archive: Int = 0,
     val direct_source: String? = null,
-    val tv_archive_duration: Int = 0
+    val tv_archive_duration: Int = 0,
 )

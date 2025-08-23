@@ -1,14 +1,14 @@
-package com.example.ptv.ui.screens
+package com.example.ptv.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.media3.common.AudioAttributes
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.common.AudioAttributes
-import androidx.media3.exoplayer.DefaultLoadControl
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.datasource.okhttp.OkHttpDataSource
+import androidx.media3.exoplayer.DefaultLoadControl
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit

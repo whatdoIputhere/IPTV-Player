@@ -7,5 +7,5 @@ data class Channel(
     val logo: String = "",
     val group: String = "",
     val language: String = "",
-    val country: String = ""
+    val country: String = "",
 )
