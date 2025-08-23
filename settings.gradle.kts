@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ptv"
+rootProject.name = "iptvplayer"
 include(":app")

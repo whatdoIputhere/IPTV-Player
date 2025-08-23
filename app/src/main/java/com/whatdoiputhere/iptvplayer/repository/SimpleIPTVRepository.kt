@@ -1,14 +1,14 @@
-package com.example.ptv.repository
+package com.whatdoiputhere.iptvplayer.repository
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.example.ptv.api.XtreamApiService
-import com.example.ptv.model.Channel
-import com.example.ptv.model.XtreamChannel
-import com.example.ptv.model.XtreamConfig
-import com.example.ptv.parser.M3UParser
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.whatdoiputhere.iptvplayer.api.XtreamApiService
+import com.whatdoiputhere.iptvplayer.model.Channel
+import com.whatdoiputhere.iptvplayer.model.XtreamChannel
+import com.whatdoiputhere.iptvplayer.model.XtreamConfig
+import com.whatdoiputhere.iptvplayer.parser.M3UParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +25,7 @@ class SimpleIPTVRepository(context: Context) {
         context.getSharedPreferences("saved_playlists", Context.MODE_PRIVATE)
     private val activePlaylistKey = "active_playlist_id"
 
-    fun savePlaylistConfig(playlist: com.example.ptv.model.PlaylistConfig) {
+    fun savePlaylistConfig(playlist: com.whatdoiputhere.iptvplayer.model.PlaylistConfig) {
         val playlists = getAllSavedPlaylists().toMutableList()
         val existingIndex = playlists.indexOfFirst { it.id == playlist.id }
         if (existingIndex >= 0) {
@@ -37,10 +37,10 @@ class SimpleIPTVRepository(context: Context) {
         playlistPrefs.edit().putString("playlists", json).apply()
     }
 
-    fun getAllSavedPlaylists(): List<com.example.ptv.model.PlaylistConfig> {
+    fun getAllSavedPlaylists(): List<com.whatdoiputhere.iptvplayer.model.PlaylistConfig> {
         val json = playlistPrefs.getString("playlists", null) ?: return emptyList()
         return try {
-            val type = object : TypeToken<List<com.example.ptv.model.PlaylistConfig>>() {}.type
+            val type = object : TypeToken<List<com.whatdoiputhere.iptvplayer.model.PlaylistConfig>>() {}.type
             gson.fromJson(json, type) ?: emptyList()
         } catch (e: Exception) {
             emptyList()

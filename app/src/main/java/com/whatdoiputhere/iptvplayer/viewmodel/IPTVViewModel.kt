@@ -1,13 +1,13 @@
-package com.example.ptv.viewmodel
+package com.whatdoiputhere.iptvplayer.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.ptv.model.Channel
-import com.example.ptv.model.PlaylistConfig
-import com.example.ptv.model.XtreamConfig
-import com.example.ptv.repository.SimpleIPTVRepository
 import com.google.gson.Gson
+import com.whatdoiputhere.iptvplayer.model.Channel
+import com.whatdoiputhere.iptvplayer.model.PlaylistConfig
+import com.whatdoiputhere.iptvplayer.model.XtreamConfig
+import com.whatdoiputhere.iptvplayer.repository.SimpleIPTVRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -1,8 +1,8 @@
-package com.example.ptv.api
+package com.whatdoiputhere.iptvplayer.api
 
-import com.example.ptv.model.XtreamCategory
-import com.example.ptv.model.XtreamChannel
-import com.example.ptv.model.XtreamInfo
+import com.whatdoiputhere.iptvplayer.model.XtreamCategory
+import com.whatdoiputhere.iptvplayer.model.XtreamChannel
+import com.whatdoiputhere.iptvplayer.model.XtreamInfo
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query

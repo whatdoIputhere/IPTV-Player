@@ -1,4 +1,4 @@
-package com.example.ptv.model
+package com.whatdoiputhere.iptvplayer.model
 
 data class Channel(
     val id: String = "",

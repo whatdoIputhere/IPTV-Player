@@ -1,4 +1,4 @@
-package com.example.ptv.ui.theme
+package com.whatdoiputhere.iptvplayer.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

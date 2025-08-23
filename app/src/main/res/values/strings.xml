@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">IPTV Player</string>
-    <string name="title_iptv_player">IPTV Player</string>
 
     <string name="refresh_playlist">Refresh Playlist</string>
     <string name="playlists">Playlists</string>

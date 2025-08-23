@@ -1,4 +1,4 @@
-package com.example.ptv.model
+package com.whatdoiputhere.iptvplayer.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

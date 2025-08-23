@@ -1,4 +1,4 @@
-package com.example.ptv.util
+package com.whatdoiputhere.iptvplayer.util
 
 object FunFacts {
     private val FACTS = listOf(

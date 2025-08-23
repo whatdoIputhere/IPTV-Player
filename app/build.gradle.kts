@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.ptv"
+    namespace = "com.whatdoiputhere.iptvplayer"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.ptv"
+        applicationId = "com.whatdoiputhere.iptvplayer"
         minSdk = 33
         targetSdk = 36
         versionCode = 1

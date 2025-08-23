@@ -1,4 +1,4 @@
-package com.example.ptv.model
+package com.whatdoiputhere.iptvplayer.model
 
 /**
  * Represents a saved playlist, either M3U or Xtream.

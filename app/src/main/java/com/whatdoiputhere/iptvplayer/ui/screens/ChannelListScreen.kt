@@ -1,4 +1,4 @@
-package com.example.ptv.ui.screens
+package com.whatdoiputhere.iptvplayer.ui.screens
 
 import android.content.res.Configuration
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -67,11 +67,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.ptv.R
-import com.example.ptv.model.Channel
-import com.example.ptv.ui.components.ChannelItem
-import com.example.ptv.util.FunFacts
-import com.example.ptv.viewmodel.IPTVUiState
+import com.whatdoiputhere.iptvplayer.R
+import com.whatdoiputhere.iptvplayer.model.Channel
+import com.whatdoiputhere.iptvplayer.ui.components.ChannelItem
+import com.whatdoiputhere.iptvplayer.util.FunFacts
+import com.whatdoiputhere.iptvplayer.viewmodel.IPTVUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -102,7 +102,7 @@ fun ChannelListScreen(
                 modifier = Modifier.height(56.dp),
                 title = {
                     Text(
-                        text = stringResource(id = R.string.title_iptv_player),
+                        text = stringResource(id = R.string.app_name),
                         style = MaterialTheme.typography.titleSmall,
                     )
                 },
@@ -530,7 +530,7 @@ fun EnhancedLoadingScreen(status: String, progress: Float) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
                         contentDescription =
-                        stringResource(id = com.example.ptv.R.string.loading),
+                        stringResource(id = com.whatdoiputhere.iptvplayer.R.string.loading),
                         modifier = Modifier.size(48.dp).rotate(rotation),
                         tint = MaterialTheme.colorScheme.primary,
                     )
@@ -576,7 +576,7 @@ fun EnhancedLoadingScreen(status: String, progress: Float) {
                     Text(
                         text =
                         stringResource(
-                            id = com.example.ptv.R.string.loading_iptv_channels,
+                            id = com.whatdoiputhere.iptvplayer.R.string.loading_iptv_channels,
                         ),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -629,7 +629,7 @@ fun LoadingOverlay(status: String, progress: Float, hasContent: Boolean) {
                 Text(
                     text =
                     status.ifBlank {
-                        stringResource(id = com.example.ptv.R.string.loading_from_cache)
+                        stringResource(id = com.whatdoiputhere.iptvplayer.R.string.loading_from_cache)
                     },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,

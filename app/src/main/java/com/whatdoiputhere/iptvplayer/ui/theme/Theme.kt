@@ -1,4 +1,4 @@
-package com.example.ptv.ui.theme
+package com.whatdoiputhere.iptvplayer.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

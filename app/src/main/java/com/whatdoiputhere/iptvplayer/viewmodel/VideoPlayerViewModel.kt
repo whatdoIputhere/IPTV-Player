@@ -1,4 +1,4 @@
-package com.example.ptv.viewmodel
+package com.whatdoiputhere.iptvplayer.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel

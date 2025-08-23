@@ -1,6 +1,6 @@
-package com.example.ptv.parser
+package com.whatdoiputhere.iptvplayer.parser
 
-import com.example.ptv.model.Channel
+import com.whatdoiputhere.iptvplayer.model.Channel
 
 class M3UParser {
 

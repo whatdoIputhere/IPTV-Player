@@ -1,4 +1,4 @@
-package com.example.ptv.ui.components
+package com.whatdoiputhere.iptvplayer.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -26,7 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.ptv.model.Channel
+import com.whatdoiputhere.iptvplayer.model.Channel
 
 @Composable
 fun ChannelItem(

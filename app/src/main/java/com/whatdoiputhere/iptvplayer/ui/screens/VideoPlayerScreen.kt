@@ -1,4 +1,4 @@
-package com.example.ptv.ui.screens
+package com.whatdoiputhere.iptvplayer.ui.screens
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -43,9 +43,9 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.ui.PlayerView
-import com.example.ptv.R
-import com.example.ptv.model.Channel
-import com.example.ptv.viewmodel.VideoPlayerViewModel
+import com.whatdoiputhere.iptvplayer.R
+import com.whatdoiputhere.iptvplayer.model.Channel
+import com.whatdoiputhere.iptvplayer.viewmodel.VideoPlayerViewModel
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)

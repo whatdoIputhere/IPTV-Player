@@ -1,4 +1,4 @@
-package com.example.ptv
+package com.whatdoiputhere.iptvplayer
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -24,11 +24,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.ptv.ui.screens.ChannelListScreen
-import com.example.ptv.ui.screens.VideoPlayerScreen
-import com.example.ptv.ui.theme.PtvTheme
-import com.example.ptv.viewmodel.IPTVViewModel
-import com.example.ptv.viewmodel.Screen
+import com.whatdoiputhere.iptvplayer.ui.screens.ChannelListScreen
+import com.whatdoiputhere.iptvplayer.ui.screens.VideoPlayerScreen
+import com.whatdoiputhere.iptvplayer.ui.theme.PtvTheme
+import com.whatdoiputhere.iptvplayer.viewmodel.IPTVViewModel
+import com.whatdoiputhere.iptvplayer.viewmodel.Screen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -88,7 +88,7 @@ fun IPTVApp() {
                         }
                     }
                     Screen.SavedPlaylists -> {
-                        com.example.ptv.ui.screens.SavedPlaylistsScreen(
+                        com.whatdoiputhere.iptvplayer.ui.screens.SavedPlaylistsScreen(
                             playlists = uiState.savedPlaylists,
                             activePlaylistId = uiState.activePlaylistId,
                             onAddXtream = { name, host, username, password ->

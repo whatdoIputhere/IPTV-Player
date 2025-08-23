@@ -1,4 +1,4 @@
-package com.example.ptv.ui.screens
+package com.whatdoiputhere.iptvplayer.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,7 +14,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -41,8 +40,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import com.example.ptv.R
-import com.example.ptv.model.PlaylistConfig
+import com.whatdoiputhere.iptvplayer.R
+import com.whatdoiputhere.iptvplayer.model.PlaylistConfig
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
