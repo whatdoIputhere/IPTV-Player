@@ -20,7 +20,9 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
 
-class SimpleIPTVRepository(context: Context) {
+class IPTVRepository(
+    context: Context,
+) {
     private val playlistPrefs: SharedPreferences =
         context.getSharedPreferences("saved_playlists", Context.MODE_PRIVATE)
     private val activePlaylistKey = "active_playlist_id"
@@ -62,6 +64,7 @@ class SimpleIPTVRepository(context: Context) {
             playlistPrefs.edit().remove(activePlaylistKey).apply()
         }
     }
+
     private val client = OkHttpClient()
     private val parser = M3UParser()
     private val prefs: SharedPreferences =
@@ -80,6 +83,8 @@ class SimpleIPTVRepository(context: Context) {
     private val _xtreamConfigs = MutableStateFlow<List<XtreamConfig>>(emptyList())
     private val _activeXtreamConfig = MutableStateFlow<XtreamConfig?>(null)
 
+    val xtreamConfigs: Flow<List<XtreamConfig>> = _xtreamConfigs.asStateFlow()
+
     init {
 
         loadSavedConfiguration()
@@ -95,6 +100,7 @@ class SimpleIPTVRepository(context: Context) {
     }
 
     fun getAllXtreamConfigs(): Flow<List<XtreamConfig>> = _xtreamConfigs.asStateFlow()
+
     fun getActiveXtreamConfig(): Flow<XtreamConfig?> = _activeXtreamConfig.asStateFlow()
 
     suspend fun loadChannelsFromM3U(url: String): List<Channel> =
@@ -172,7 +178,8 @@ class SimpleIPTVRepository(context: Context) {
 
                 val base = if (config.host.endsWith('/')) config.host else config.host + "/"
                 val retrofit =
-                    Retrofit.Builder()
+                    Retrofit
+                        .Builder()
                         .baseUrl(base)
                         .addConverterFactory(GsonConverterFactory.create())
                         .build()
@@ -182,8 +189,7 @@ class SimpleIPTVRepository(context: Context) {
                 val categoriesResponse =
                     service.getLiveCategories(config.username, config.password)
                 val categoryMap =
-                    if (categoriesResponse.isSuccessful && categoriesResponse.body() != null
-                    ) {
+                    if (categoriesResponse.isSuccessful && categoriesResponse.body() != null) {
                         categoriesResponse.body()!!.associate {
                             it.category_id to it.category_name
                         }
@@ -205,7 +211,7 @@ class SimpleIPTVRepository(context: Context) {
                         Channel(
                             name = ch.name,
                             url =
-                            "$host/live/${config.username}/${config.password}/${ch.stream_id}.m3u8",
+                                "$host/live/${config.username}/${config.password}/${ch.stream_id}.m3u8",
                             logo = ch.stream_icon,
                             group = categoryName,
                         )
@@ -252,7 +258,11 @@ class SimpleIPTVRepository(context: Context) {
         val maxCacheAgeMs = 15 * 24 * 60 * 60 * 1000L
 
         if (cacheAgeMs > maxCacheAgeMs) {
-            playlistCache.edit().remove(cacheKey).remove(timestampKey).apply()
+            playlistCache
+                .edit()
+                .remove(cacheKey)
+                .remove(timestampKey)
+                .apply()
             return emptyList()
         }
 
@@ -267,7 +277,10 @@ class SimpleIPTVRepository(context: Context) {
         }
     }
 
-    private fun savePlaylistToCache(key: String, channels: List<Channel>) {
+    private fun savePlaylistToCache(
+        key: String,
+        channels: List<Channel>,
+    ) {
         val cacheKey = "${key}_data"
         val timestampKey = "${key}_timestamp"
 
@@ -287,7 +300,8 @@ class SimpleIPTVRepository(context: Context) {
     suspend fun loadChannelsFromUrl(url: String) = loadChannelsFromM3U(url)
 
     fun saveXtreamConfig(config: XtreamConfig): Long {
-        prefs.edit()
+        prefs
+            .edit()
             .putString("host", config.host)
             .putString("username", config.username)
             .putString("password", config.password)
@@ -322,15 +336,14 @@ class SimpleIPTVRepository(context: Context) {
         host: String,
         username: String,
         password: String,
-    ): Result<Boolean> {
-        return try {
+    ): Result<Boolean> =
+        try {
             val config = XtreamConfig(0, "Test", host, username, password)
             val channels = loadChannelsFromXtream(config)
             Result.success(channels.isNotEmpty())
         } catch (e: Exception) {
             Result.failure(e)
         }
-    }
 
     fun clearChannelCache() {
         clearAllPlaylistCaches()

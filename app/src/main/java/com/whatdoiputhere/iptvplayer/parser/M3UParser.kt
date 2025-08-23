@@ -3,7 +3,6 @@ package com.whatdoiputhere.iptvplayer.parser
 import com.whatdoiputhere.iptvplayer.model.Channel
 
 class M3UParser {
-
     fun parse(content: String): List<Channel> {
         val channels = mutableListOf<Channel>()
         val lines = content.split("\n")
@@ -57,8 +56,11 @@ class M3UParser {
         }
     }
 
-    private fun extractAttribute(line: String, attribute: String): String {
-        return try {
+    private fun extractAttribute(
+        line: String,
+        attribute: String,
+    ): String =
+        try {
             val pattern = "$attribute=\"([^\"]*)\""
             val regex = Regex(pattern)
             val matchResult = regex.find(line)
@@ -78,5 +80,4 @@ class M3UParser {
                 ""
             }
         }
-    }
 }

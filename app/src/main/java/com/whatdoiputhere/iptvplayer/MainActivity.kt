@@ -24,26 +24,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.whatdoiputhere.iptvplayer.ui.screens.ChannelListScreen
-import com.whatdoiputhere.iptvplayer.ui.screens.VideoPlayerScreen
-import com.whatdoiputhere.iptvplayer.ui.theme.PtvTheme
+import androidx.media3.common.util.UnstableApi
+import com.whatdoiputhere.iptvplayer.ui.screens.channelListScreen
+import com.whatdoiputhere.iptvplayer.ui.screens.videoPlayerScreen
+import com.whatdoiputhere.iptvplayer.ui.theme.iptvPlayerTheme
 import com.whatdoiputhere.iptvplayer.viewmodel.IPTVViewModel
 import com.whatdoiputhere.iptvplayer.viewmodel.Screen
 
 class MainActivity : ComponentActivity() {
+    @UnstableApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            PtvTheme {
-                IPTVApp()
+            iptvPlayerTheme {
+                iptvApp()
             }
         }
     }
 }
 
+@UnstableApi
 @Composable
-fun IPTVApp() {
+fun iptvApp() {
     val viewModel: IPTVViewModel = viewModel()
     val uiState by viewModel.uiState.collectAsState()
 
@@ -61,9 +64,10 @@ fun IPTVApp() {
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
         ) {
             if (uiState.error != null) {
                 Box(
@@ -80,7 +84,7 @@ fun IPTVApp() {
                 when (uiState.currentScreen) {
                     Screen.VideoPlayer -> {
                         uiState.selectedChannel?.let { channel ->
-                            VideoPlayerScreen(
+                            videoPlayerScreen(
                                 channel = channel,
                                 onBackClick = { viewModel.clearSelectedChannel() },
                                 orientationBeforeStream = uiState.orientationBeforeStream,
@@ -88,7 +92,7 @@ fun IPTVApp() {
                         }
                     }
                     Screen.SavedPlaylists -> {
-                        com.whatdoiputhere.iptvplayer.ui.screens.SavedPlaylistsScreen(
+                        com.whatdoiputhere.iptvplayer.ui.screens.savedPlaylistsScreen(
                             playlists = uiState.savedPlaylists,
                             activePlaylistId = uiState.activePlaylistId,
                             onAddXtream = { name, host, username, password ->
@@ -101,7 +105,7 @@ fun IPTVApp() {
                         )
                     }
                     Screen.ChannelList -> {
-                        ChannelListScreen(
+                        channelListScreen(
                             uiState = uiState,
                             onChannelClick = { channel -> viewModel.selectChannel(channel) },
                             onSearchQueryChange = { query -> viewModel.updateSearchQuery(query) },

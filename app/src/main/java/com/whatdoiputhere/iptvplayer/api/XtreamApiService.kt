@@ -8,7 +8,6 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface XtreamApiService {
-
     @GET("player_api.php")
     suspend fun getAccountInfo(
         @Query("username") username: String,

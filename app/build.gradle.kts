@@ -87,7 +87,7 @@ dependencies {
 }
 
 ktlint {
-    version.set("0.50.0")
+    version.set("1.7.1")
     android.set(true)
     ignoreFailures.set(false)
     enableExperimentalRules.set(false)

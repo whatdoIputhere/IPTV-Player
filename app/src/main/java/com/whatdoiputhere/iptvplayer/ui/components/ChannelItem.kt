@@ -29,7 +29,7 @@ import coil.request.ImageRequest
 import com.whatdoiputhere.iptvplayer.model.Channel
 
 @Composable
-fun ChannelItem(
+fun channelItem(
     channel: Channel,
     onChannelClick: (Channel) -> Unit,
     modifier: Modifier = Modifier,
@@ -41,35 +41,41 @@ fun ChannelItem(
     val imageSize = if (compact) 40.dp else 44.dp
 
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onChannelClick(channel) }
-            .padding(horizontal = outerPaddingH, vertical = outerPaddingV),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clickable { onChannelClick(channel) }
+                .padding(horizontal = outerPaddingH, vertical = outerPaddingV),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(innerPadding),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(innerPadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (channel.logo.isNotEmpty()) {
                 AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(channel.logo)
-                        .crossfade(true)
-                        .build(),
+                    model =
+                        ImageRequest
+                            .Builder(LocalContext.current)
+                            .data(channel.logo)
+                            .crossfade(true)
+                            .build(),
                     contentDescription = "Channel logo",
-                    modifier = Modifier
-                        .size(imageSize)
-                        .clip(RoundedCornerShape(8.dp)),
+                    modifier =
+                        Modifier
+                            .size(imageSize)
+                            .clip(RoundedCornerShape(8.dp)),
                     contentScale = ContentScale.Fit,
                 )
             } else {
                 Surface(
-                    modifier = Modifier
-                        .size(imageSize)
-                        .clip(RoundedCornerShape(8.dp)),
+                    modifier =
+                        Modifier
+                            .size(imageSize)
+                            .clip(RoundedCornerShape(8.dp)),
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                 ) {
                     Box(
@@ -109,10 +115,11 @@ fun ChannelItem(
 
                 if (channel.country.isNotEmpty() || channel.language.isNotEmpty()) {
                     Text(
-                        text = listOfNotNull(
-                            channel.country.takeIf { it.isNotEmpty() },
-                            channel.language.takeIf { it.isNotEmpty() },
-                        ).joinToString(" • "),
+                        text =
+                            listOfNotNull(
+                                channel.country.takeIf { it.isNotEmpty() },
+                                channel.language.takeIf { it.isNotEmpty() },
+                            ).joinToString(" • "),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                         maxLines = 1,

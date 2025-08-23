@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
@@ -13,38 +14,54 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
 
-class VideoPlayerViewModel(application: Application) : AndroidViewModel(application) {
+@UnstableApi
+class VideoPlayerViewModel(
+    application: Application,
+) : AndroidViewModel(application) {
     val exoPlayer: ExoPlayer
 
     init {
         val appContext = application.applicationContext
 
-        val logging = HttpLoggingInterceptor(object : HttpLoggingInterceptor.Logger {
-            override fun log(message: String) {}
-        }).apply { level = HttpLoggingInterceptor.Level.BASIC }
+        val logging =
+            HttpLoggingInterceptor(
+                object : HttpLoggingInterceptor.Logger {
+                    override fun log(message: String) {}
+                },
+            ).apply { level = HttpLoggingInterceptor.Level.BASIC }
 
-        val okHttpClient = OkHttpClient.Builder()
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(15, TimeUnit.SECONDS)
-            .addInterceptor(logging)
-            .build()
+        val okHttpClient =
+            OkHttpClient
+                .Builder()
+                .connectTimeout(15, TimeUnit.SECONDS)
+                .readTimeout(15, TimeUnit.SECONDS)
+                .addInterceptor(logging)
+                .build()
 
         val dataSourceFactory = OkHttpDataSource.Factory(okHttpClient)
         val mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory)
 
-        val loadControl = DefaultLoadControl.Builder()
-            .setBufferDurationsMs(20000, 120000, 2000, 5000)
-            .build()
+        val loadControl =
+            DefaultLoadControl
+                .Builder()
+                .setBufferDurationsMs(20000, 120000, 2000, 5000)
+                .build()
 
-        exoPlayer = ExoPlayer.Builder(appContext)
-            .setMediaSourceFactory(mediaSourceFactory)
-            .setLoadControl(loadControl)
-            .setAudioAttributes(AudioAttributes.DEFAULT, true)
-            .build()
+        exoPlayer =
+            ExoPlayer
+                .Builder(appContext)
+                .setMediaSourceFactory(mediaSourceFactory)
+                .setLoadControl(loadControl)
+                .setAudioAttributes(AudioAttributes.DEFAULT, true)
+                .build()
     }
 
     fun setUrl(url: String) {
-        val currentUri = exoPlayer.currentMediaItem?.localConfiguration?.uri?.toString()
+        val currentUri =
+            exoPlayer.currentMediaItem
+                ?.localConfiguration
+                ?.uri
+                ?.toString()
         if (currentUri == url) {
             if (!exoPlayer.playWhenReady && !exoPlayer.isPlaying) {
                 try {

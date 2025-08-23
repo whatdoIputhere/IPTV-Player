@@ -42,22 +42,24 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.PlayerView
 import com.whatdoiputhere.iptvplayer.R
 import com.whatdoiputhere.iptvplayer.model.Channel
 import com.whatdoiputhere.iptvplayer.viewmodel.VideoPlayerViewModel
 import kotlinx.coroutines.delay
 
+@UnstableApi
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VideoPlayerScreen(
+fun videoPlayerScreen(
     channel: Channel,
     onBackClick: () -> Unit,
     orientationBeforeStream: Int? = null,
 ) {
     val context = LocalContext.current
     val activity = context as? android.app.Activity
-    val TAG = "VideoPlayerScreen"
+    val tag = "VideoPlayerScreen"
 
     DisposableEffect(activity) {
         val window = activity?.window
@@ -77,7 +79,9 @@ fun VideoPlayerScreen(
 
     var httpErrorCode by remember { mutableStateOf<Int?>(null) }
 
-    val vm: VideoPlayerViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    val vm: VideoPlayerViewModel =
+        androidx.lifecycle.viewmodel.compose
+            .viewModel()
     val exoPlayer = vm.exoPlayer
 
     LaunchedEffect(channel.url) {
@@ -86,11 +90,12 @@ fun VideoPlayerScreen(
 
     fun restoreAndUnlock(prevConfig: Int?) {
         prevConfig?.let { prev ->
-            val mapped = if (prev == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
-                android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-            } else {
-                android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            }
+            val mapped =
+                if (prev == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+                    android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                } else {
+                    android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                }
             activity?.requestedOrientation = mapped
             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                 activity?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
@@ -120,18 +125,19 @@ fun VideoPlayerScreen(
                 val bufferedPct = exoPlayer.bufferedPercentage
                 val isLoading = exoPlayer.isLoading
                 val state = exoPlayer.playbackState
-                Log.d(TAG, "bufferMetrics: pos=$pos bufferedPos=$bufferedPos bufferedPct=$bufferedPct isLoading=$isLoading state=$state")
+                Log.d(tag, "bufferMetrics: pos=$pos bufferedPos=$bufferedPos bufferedPct=$bufferedPct isLoading=$isLoading state=$state")
             } catch (t: Throwable) {
-                Log.w(TAG, "bufferMetrics: exception: ${t.message}")
+                Log.w(tag, "bufferMetrics: exception: ${t.message}")
             }
             delay(1000L)
         }
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(Color.Black),
     ) {
         AndroidView(
             factory = { ctx ->
@@ -159,12 +165,14 @@ fun VideoPlayerScreen(
 
         if (controlsVisible) {
             Card(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.Black.copy(alpha = 0.7f),
-                ),
+                modifier =
+                    Modifier
+                        .align(Alignment.TopStart)
+                        .padding(16.dp),
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor = Color.Black.copy(alpha = 0.7f),
+                    ),
                 shape = RoundedCornerShape(8.dp),
             ) {
                 Row(
@@ -187,11 +195,12 @@ fun VideoPlayerScreen(
                     IconButton(
                         onClick = {
                             val orientation = context.resources.configuration.orientation
-                            val newOrientation = if (orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
-                                android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-                            } else {
-                                android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-                            }
+                            val newOrientation =
+                                if (orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+                                    android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                                } else {
+                                    android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                                }
                             activity?.requestedOrientation = newOrientation
                             controlsVisible = false
                         },
@@ -227,9 +236,10 @@ fun VideoPlayerScreen(
 
         if (httpErrorCode != null) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.6f)),
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.6f)),
                 contentAlignment = Alignment.Center,
             ) {
                 Card(

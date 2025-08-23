@@ -45,7 +45,7 @@ import com.whatdoiputhere.iptvplayer.model.PlaylistConfig
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SavedPlaylistsScreen(
+fun savedPlaylistsScreen(
     playlists: List<PlaylistConfig>,
     activePlaylistId: String?,
     onAddXtream: (String, String, String, String) -> Unit,
@@ -158,8 +158,9 @@ fun SavedPlaylistsScreen(
                         )
                         Row(
                             modifier =
-                            Modifier.fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 4.dp),
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 4.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
                             TextButton(onClick = { onDeletePlaylist(playlist.id) }) {

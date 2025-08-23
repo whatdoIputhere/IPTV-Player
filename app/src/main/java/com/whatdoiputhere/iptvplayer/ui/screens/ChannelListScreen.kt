@@ -69,13 +69,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.whatdoiputhere.iptvplayer.R
 import com.whatdoiputhere.iptvplayer.model.Channel
-import com.whatdoiputhere.iptvplayer.ui.components.ChannelItem
+import com.whatdoiputhere.iptvplayer.ui.components.channelItem
 import com.whatdoiputhere.iptvplayer.util.FunFacts
 import com.whatdoiputhere.iptvplayer.viewmodel.IPTVUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChannelListScreen(
+fun channelListScreen(
     uiState: IPTVUiState,
     onChannelClick: (Channel) -> Unit,
     onSaveScroll: (firstVisibleIndex: Int, firstVisibleScrollOffset: Int) -> Unit,
@@ -115,21 +115,21 @@ fun ChannelListScreen(
                             Icon(
                                 Icons.Default.Refresh,
                                 contentDescription =
-                                stringResource(id = R.string.refresh_playlist),
+                                    stringResource(id = R.string.refresh_playlist),
                                 tint =
-                                if (uiState.isLoading) {
-                                    MaterialTheme.colorScheme.onSurface
-                                        .copy(alpha = 0.5f)
-                                } else {
-                                    MaterialTheme.colorScheme.onSurface
-                                },
+                                    if (uiState.isLoading) {
+                                        MaterialTheme.colorScheme.onSurface
+                                            .copy(alpha = 0.5f)
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurface
+                                    },
                             )
                         }
                         TextButton(
                             onClick = onShowSavedPlaylists,
                             modifier = Modifier.height(36.dp).padding(end = 4.dp),
                             contentPadding =
-                            PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                                PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                         ) {
                             Text(
                                 stringResource(id = R.string.playlists),
@@ -147,8 +147,7 @@ fun ChannelListScreen(
                     remember(uiState.channels) {
                         val seenCategories = mutableSetOf<String>()
                         uiState.channels.mapNotNull { channel ->
-                            if (channel.group.isNotBlank() && seenCategories.add(channel.group)
-                            ) {
+                            if (channel.group.isNotBlank() && seenCategories.add(channel.group)) {
                                 channel.group
                             } else {
                                 null
@@ -164,9 +163,9 @@ fun ChannelListScreen(
                             Text(
                                 stringResource(id = R.string.search_categories),
                                 style =
-                                MaterialTheme.typography.bodySmall.copy(
-                                    fontSize = 12.sp,
-                                ),
+                                    MaterialTheme.typography.bodySmall.copy(
+                                        fontSize = 12.sp,
+                                    ),
                             )
                         },
                         leadingIcon = {
@@ -201,9 +200,9 @@ fun ChannelListScreen(
                     val gridState =
                         rememberLazyGridState(
                             initialFirstVisibleItemIndex =
-                            uiState.channelListFirstVisibleIndex ?: 0,
+                                uiState.channelListFirstVisibleIndex ?: 0,
                             initialFirstVisibleItemScrollOffset =
-                            uiState.channelListFirstVisibleScrollOffset ?: 0,
+                                uiState.channelListFirstVisibleScrollOffset ?: 0,
                         )
 
                     LazyVerticalGrid(
@@ -216,19 +215,19 @@ fun ChannelListScreen(
                         items(filteredCategories, key = { it }) { category ->
                             Card(
                                 modifier =
-                                Modifier.fillMaxWidth().height(84.dp).clickable {
-                                    onSaveScroll(
-                                        gridState.firstVisibleItemIndex,
-                                        gridState.firstVisibleItemScrollOffset,
-                                    )
-                                    onCategorySelect(category)
-                                },
+                                    Modifier.fillMaxWidth().height(84.dp).clickable {
+                                        onSaveScroll(
+                                            gridState.firstVisibleItemIndex,
+                                            gridState.firstVisibleItemScrollOffset,
+                                        )
+                                        onCategorySelect(category)
+                                    },
                                 colors =
-                                CardDefaults.cardColors(
-                                    containerColor =
-                                    MaterialTheme.colorScheme
-                                        .primaryContainer,
-                                ),
+                                    CardDefaults.cardColors(
+                                        containerColor =
+                                            MaterialTheme.colorScheme
+                                                .primaryContainer,
+                                    ),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                             ) {
                                 Box(
@@ -261,8 +260,9 @@ fun ChannelListScreen(
                 } else {
                     Row(
                         modifier =
-                        Modifier.fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         OutlinedTextField(
@@ -272,20 +272,20 @@ fun ChannelListScreen(
                                 Text(
                                     stringResource(id = R.string.search_channels),
                                     style =
-                                    MaterialTheme.typography.bodySmall.copy(
-                                        fontSize = 12.sp,
-                                    ),
+                                        MaterialTheme.typography.bodySmall.copy(
+                                            fontSize = 12.sp,
+                                        ),
                                 )
                             },
                             leadingIcon = {
                                 Icon(
                                     Icons.Default.Search,
                                     contentDescription =
-                                    stringResource(id = R.string.search),
+                                        stringResource(id = R.string.search),
                                 )
                             },
                             textStyle =
-                            MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                                MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                             modifier = Modifier.weight(1f).height(58.dp).alignByBaseline(),
                             singleLine = true,
                             maxLines = 1,
@@ -368,7 +368,7 @@ fun ChannelListScreen(
                                                         uiState.searchQuery,
                                                         ignoreCase = true,
                                                     )
-                                                )
+                                            )
                                     }
                                 }
                             }
@@ -383,22 +383,22 @@ fun ChannelListScreen(
                                 val gridState =
                                     rememberLazyGridState(
                                         initialFirstVisibleItemIndex =
-                                        uiState.channelListFirstVisibleIndex ?: 0,
+                                            uiState.channelListFirstVisibleIndex ?: 0,
                                         initialFirstVisibleItemScrollOffset =
-                                        uiState.channelListFirstVisibleScrollOffset
-                                            ?: 0,
+                                            uiState.channelListFirstVisibleScrollOffset
+                                                ?: 0,
                                     )
 
                                 LazyVerticalGrid(
                                     state = gridState,
                                     columns = GridCells.Fixed(3),
                                     modifier =
-                                    Modifier.fillMaxSize().padding(horizontal = 8.dp),
+                                        Modifier.fillMaxSize().padding(horizontal = 8.dp),
                                     verticalArrangement = Arrangement.spacedBy(6.dp),
                                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                                     content = {
                                         items(filteredChannels, key = { it.name }) { channel ->
-                                            ChannelItem(
+                                            channelItem(
                                                 channel = channel,
                                                 onChannelClick = {
                                                     onSaveScroll(
@@ -418,15 +418,15 @@ fun ChannelListScreen(
                                 val listState =
                                     rememberLazyListState(
                                         initialFirstVisibleItemIndex =
-                                        uiState.channelListFirstVisibleIndex ?: 0,
+                                            uiState.channelListFirstVisibleIndex ?: 0,
                                         initialFirstVisibleItemScrollOffset =
-                                        uiState.channelListFirstVisibleScrollOffset
-                                            ?: 0,
+                                            uiState.channelListFirstVisibleScrollOffset
+                                                ?: 0,
                                     )
 
                                 LazyColumn(state = listState) {
                                     items(filteredChannels, key = { it.name }) { channel ->
-                                        ChannelItem(
+                                        channelItem(
                                             channel = channel,
                                             onChannelClick = {
                                                 onSaveScroll(
@@ -447,9 +447,9 @@ fun ChannelListScreen(
                     (
                         uiState.channels.isNotEmpty() ||
                             uiState.loadingStatus.isNotBlank()
-                        )
+                    )
                 ) {
-                    LoadingOverlay(
+                    loadingOverlay(
                         status = uiState.loadingStatus,
                         progress = uiState.loadingProgress,
                         hasContent = uiState.channels.isNotEmpty(),
@@ -457,7 +457,7 @@ fun ChannelListScreen(
                 }
 
                 if (uiState.isLoading && uiState.channels.isEmpty()) {
-                    EnhancedLoadingScreen(
+                    enhancedLoadingScreen(
                         status = uiState.loadingStatus,
                         progress = uiState.loadingProgress,
                     )
@@ -468,7 +468,10 @@ fun ChannelListScreen(
 }
 
 @Composable
-fun EnhancedLoadingScreen(status: String, progress: Float) {
+fun enhancedLoadingScreen(
+    status: String,
+    progress: Float,
+) {
     val infiniteTransition = rememberInfiniteTransition(label = "loading")
 
     val rotation by
@@ -476,10 +479,10 @@ fun EnhancedLoadingScreen(status: String, progress: Float) {
             initialValue = 0f,
             targetValue = 360f,
             animationSpec =
-            infiniteRepeatable(
-                animation = tween(2000, easing = LinearEasing),
-                repeatMode = RepeatMode.Restart,
-            ),
+                infiniteRepeatable(
+                    animation = tween(2000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Restart,
+                ),
             label = "rotation",
         )
 
@@ -488,10 +491,10 @@ fun EnhancedLoadingScreen(status: String, progress: Float) {
             initialValue = 0.3f,
             targetValue = 0.7f,
             animationSpec =
-            infiniteRepeatable(
-                animation = tween(1500, easing = FastOutSlowInEasing),
-                repeatMode = RepeatMode.Reverse,
-            ),
+                infiniteRepeatable(
+                    animation = tween(1500, easing = FastOutSlowInEasing),
+                    repeatMode = RepeatMode.Reverse,
+                ),
             label = "pulse",
         )
 
@@ -500,17 +503,18 @@ fun EnhancedLoadingScreen(status: String, progress: Float) {
             initialValue = 0.95f,
             targetValue = 1.05f,
             animationSpec =
-            infiniteRepeatable(
-                animation = tween(1000, easing = FastOutSlowInEasing),
-                repeatMode = RepeatMode.Reverse,
-            ),
+                infiniteRepeatable(
+                    animation = tween(1000, easing = FastOutSlowInEasing),
+                    repeatMode = RepeatMode.Reverse,
+                ),
             label = "scale",
         )
 
     Box(
         modifier =
-        Modifier.fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface.copy(alpha = alpha)),
+            Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = alpha)),
         contentAlignment = Alignment.Center,
     ) {
         Column(
@@ -521,16 +525,16 @@ fun EnhancedLoadingScreen(status: String, progress: Float) {
                 modifier = Modifier.size(120.dp).scale(scale),
                 shape = RoundedCornerShape(60.dp),
                 colors =
-                CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                ),
+                    CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
             ) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
                         contentDescription =
-                        stringResource(id = com.whatdoiputhere.iptvplayer.R.string.loading),
+                            stringResource(id = com.whatdoiputhere.iptvplayer.R.string.loading),
                         modifier = Modifier.size(48.dp).rotate(rotation),
                         tint = MaterialTheme.colorScheme.primary,
                     )
@@ -575,9 +579,9 @@ fun EnhancedLoadingScreen(status: String, progress: Float) {
                 } else {
                     Text(
                         text =
-                        stringResource(
-                            id = com.whatdoiputhere.iptvplayer.R.string.loading_iptv_channels,
-                        ),
+                            stringResource(
+                                id = com.whatdoiputhere.iptvplayer.R.string.loading_iptv_channels,
+                            ),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center,
@@ -600,13 +604,18 @@ fun EnhancedLoadingScreen(status: String, progress: Float) {
 }
 
 @Composable
-fun LoadingOverlay(status: String, progress: Float, hasContent: Boolean) {
+fun loadingOverlay(
+    status: String,
+    progress: Float,
+    hasContent: Boolean,
+) {
     if (hasContent) {
         Box(
             modifier =
-            Modifier.fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.95f))
-                .padding(16.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.95f))
+                    .padding(16.dp),
             contentAlignment = Alignment.Center,
         ) {
             Row(
@@ -628,9 +637,9 @@ fun LoadingOverlay(status: String, progress: Float, hasContent: Boolean) {
 
                 Text(
                     text =
-                    status.ifBlank {
-                        stringResource(id = com.whatdoiputhere.iptvplayer.R.string.loading_from_cache)
-                    },
+                        status.ifBlank {
+                            stringResource(id = com.whatdoiputhere.iptvplayer.R.string.loading_from_cache)
+                        },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
