@@ -71,14 +71,12 @@ class IPTVViewModel(
         name: String,
         url: String,
     ) {
-      
         parseXtreamFromM3U(url)?.let { (host, username, password) ->
             val displayName = name.ifBlank { "$username@$host" }
             addXtreamFromDialog(displayName, host, username, password)
             return
         }
 
-      
         val id = url.trim()
         val cfg =
             PlaylistConfig(
@@ -169,7 +167,6 @@ class IPTVViewModel(
     fun removePlaylist(id: String) {
         repository.removePlaylist(id)
         if (_uiState.value.activePlaylistId == id) {
-          
             _uiState.value =
                 _uiState.value.copy(
                     activePlaylistId = null,
@@ -219,8 +216,6 @@ class IPTVViewModel(
                             activeXtreamConfigId = activeConfig?.id,
                         )
 
-                  
-                  
                     if (activeConfig != null && _uiState.value.channels.isEmpty()) {
                         val expectedPlaylistId = "xtream:${activeConfig.host}:${activeConfig.username}"
                         val activePlaylistId = repository.getActivePlaylistId()
@@ -364,7 +359,6 @@ class IPTVViewModel(
         _uiState.value =
             _uiState.value.copy(
                 currentScreen = Screen.ChannelList,
-              
                 filteredChannels = _uiState.value.channels,
                 channelListFirstVisibleIndex = 0,
                 channelListFirstVisibleScrollOffset = 0,
