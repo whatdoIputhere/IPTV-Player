@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +43,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.whatdoiputhere.iptvplayer.R
 import com.whatdoiputhere.iptvplayer.model.PlaylistConfig
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,10 +52,13 @@ fun savedPlaylistsScreen(
     activePlaylistId: String?,
     onAddXtream: (String, String, String, String) -> Unit,
     onAddM3U: (String, String) -> Unit,
+    onValidateXtream: suspend (String, String, String) -> Boolean,
+    onValidateM3U: suspend (String) -> Boolean,
     onSelectPlaylist: (String) -> Unit,
     onDeletePlaylist: (String) -> Unit,
     onBack: () -> Unit,
 ) {
+    val scope = rememberCoroutineScope()
     var showM3UDialog by remember { mutableStateOf(false) }
     var showXtreamDialog by remember { mutableStateOf(false) }
     var showAddMenu by remember { mutableStateOf(false) }
@@ -65,9 +70,13 @@ fun savedPlaylistsScreen(
     var xtreamHost by remember { mutableStateOf("") }
     var xtreamUsername by remember { mutableStateOf("") }
     var xtreamPassword by remember { mutableStateOf("") }
+    var xtreamHasError by remember { mutableStateOf(false) }
+    var xtreamValidating by remember { mutableStateOf(false) }
 
     val defaultM3uName = stringResource(id = R.string.m3u_playlist)
     val defaultXtreamName = stringResource(id = R.string.xtream_playlist)
+    var m3uHasError by remember { mutableStateOf(false) }
+    var m3uValidating by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -194,16 +203,33 @@ fun savedPlaylistsScreen(
                         onValueChange = { m3uUrl = it },
                         label = { Text(stringResource(id = R.string.m3u_url)) },
                     )
+                    if (m3uHasError) {
+                        Text(
+                            stringResource(id = R.string.invalid_m3u_url),
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
                 }
             },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        if (m3uUrl.isNotBlank()) {
-                            onAddM3U(m3uName.ifBlank { defaultM3uName }, m3uUrl)
-                            m3uName = ""
-                            m3uUrl = ""
-                            showM3UDialog = false
+                        if (m3uUrl.isNotBlank() && !m3uValidating) {
+                            m3uValidating = true
+                            m3uHasError = false
+                            scope.launch {
+                                val ok = onValidateM3U(m3uUrl)
+                                m3uValidating = false
+                                if (ok) {
+                                    onAddM3U(m3uName.ifBlank { defaultM3uName }, m3uUrl)
+                                    m3uName = ""
+                                    m3uUrl = ""
+                                    showM3UDialog = false
+                                } else {
+                                    m3uHasError = true
+                                }
+                            }
                         }
                     },
                 ) { Text(stringResource(id = R.string.save)) }
@@ -214,6 +240,8 @@ fun savedPlaylistsScreen(
                         showM3UDialog = false
                         m3uName = ""
                         m3uUrl = ""
+                        m3uHasError = false
+                        m3uValidating = false
                     },
                 ) { Text(stringResource(id = R.string.cancel)) }
             },
@@ -255,26 +283,45 @@ fun savedPlaylistsScreen(
                         label = { Text(stringResource(id = R.string.password)) },
                         visualTransformation = PasswordVisualTransformation(),
                     )
+                    if (xtreamHasError) {
+                        Text(
+                            stringResource(id = R.string.invalid_xtream),
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
                 }
             },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        if (xtreamHost.isNotBlank() &&
-                            xtreamUsername.isNotBlank() &&
-                            xtreamPassword.isNotBlank()
-                        ) {
-                            onAddXtream(
-                                xtreamName.ifBlank { defaultXtreamName },
-                                xtreamHost,
-                                xtreamUsername,
-                                xtreamPassword,
-                            )
-                            xtreamName = ""
-                            xtreamHost = ""
-                            xtreamUsername = ""
-                            xtreamPassword = ""
-                            showXtreamDialog = false
+                        val inputsValid =
+                            xtreamHost.isNotBlank() &&
+                                xtreamUsername.isNotBlank() &&
+                                xtreamPassword.isNotBlank() &&
+                                !xtreamValidating
+                        if (inputsValid) {
+                            xtreamValidating = true
+                            xtreamHasError = false
+                            scope.launch {
+                                val ok = onValidateXtream(xtreamHost, xtreamUsername, xtreamPassword)
+                                xtreamValidating = false
+                                if (ok) {
+                                    onAddXtream(
+                                        xtreamName.ifBlank { defaultXtreamName },
+                                        xtreamHost,
+                                        xtreamUsername,
+                                        xtreamPassword,
+                                    )
+                                    xtreamName = ""
+                                    xtreamHost = ""
+                                    xtreamUsername = ""
+                                    xtreamPassword = ""
+                                    showXtreamDialog = false
+                                } else {
+                                    xtreamHasError = true
+                                }
+                            }
                         }
                     },
                 ) { Text(stringResource(id = R.string.save)) }
@@ -287,6 +334,8 @@ fun savedPlaylistsScreen(
                         xtreamHost = ""
                         xtreamUsername = ""
                         xtreamPassword = ""
+                        xtreamHasError = false
+                        xtreamValidating = false
                     },
                 ) { Text(stringResource(id = R.string.cancel)) }
             },

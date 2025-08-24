@@ -43,6 +43,8 @@
     <string name="example_host">http://example.com:8080</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
+    <string name="invalid_m3u_url">Could not validate M3U URL. Check the link and try again.</string>
+    <string name="invalid_xtream">Could not validate Xtream credentials. Check host/username/password.</string>
 
     <string name="toggle_rotation">Toggle rotation</string>
     <string name="stream_unavailable_message">Stream could not be played</string>

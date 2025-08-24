@@ -1,6 +1,7 @@
 package com.whatdoiputhere.iptvplayer.viewmodel
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
@@ -70,6 +71,14 @@ class IPTVViewModel(
         name: String,
         url: String,
     ) {
+      
+        parseXtreamFromM3U(url)?.let { (host, username, password) ->
+            val displayName = name.ifBlank { "$username@$host" }
+            addXtreamFromDialog(displayName, host, username, password)
+            return
+        }
+
+      
         val id = url.trim()
         val cfg =
             PlaylistConfig(
@@ -81,6 +90,25 @@ class IPTVViewModel(
         addPlaylist(cfg)
         setActivePlaylist(id)
         loadChannelsFromUrl(url)
+    }
+
+    private fun parseXtreamFromM3U(url: String): Triple<String, String, String>? {
+        return runCatching {
+            val uri = Uri.parse(url.trim())
+            val scheme = uri.scheme ?: return null
+            val authority = uri.authority ?: return null
+            val username =
+                uri.getQueryParameter("username")
+                    ?: uri.getQueryParameter("user")
+                    ?: return null
+            val password =
+                uri.getQueryParameter("password")
+                    ?: uri.getQueryParameter("pass")
+                    ?: return null
+
+            val host = "$scheme://$authority/"
+            Triple(host, username, password)
+        }.getOrNull()
     }
 
     fun addXtreamFromDialog(
@@ -141,8 +169,16 @@ class IPTVViewModel(
     fun removePlaylist(id: String) {
         repository.removePlaylist(id)
         if (_uiState.value.activePlaylistId == id) {
-            _uiState.value = _uiState.value.copy(activePlaylistId = null)
-            // TODO: Clear channel list
+          
+            _uiState.value =
+                _uiState.value.copy(
+                    activePlaylistId = null,
+                    channels = emptyList(),
+                    filteredChannels = emptyList(),
+                    selectedCategory = null,
+                    selectedGroup = "All",
+                    searchQuery = "",
+                )
         }
         loadSavedPlaylists()
     }
@@ -183,10 +219,16 @@ class IPTVViewModel(
                             activeXtreamConfigId = activeConfig?.id,
                         )
 
+                  
+                  
                     if (activeConfig != null && _uiState.value.channels.isEmpty()) {
-                        loadChannelsFromXtream(activeConfig)
+                        val expectedPlaylistId = "xtream:${activeConfig.host}:${activeConfig.username}"
+                        val activePlaylistId = repository.getActivePlaylistId()
+                        if (activePlaylistId == expectedPlaylistId) {
+                            loadChannelsFromXtream(activeConfig)
+                        }
                     }
-                }.collect { /* Collection handled in combine */ }
+                }.collect { }
             } catch (e: Exception) {
                 _uiState.value =
                     _uiState.value.copy(
@@ -319,11 +361,26 @@ class IPTVViewModel(
     }
 
     fun navigateToChannelList() {
-        _uiState.value = _uiState.value.copy(currentScreen = Screen.ChannelList)
+        _uiState.value =
+            _uiState.value.copy(
+                currentScreen = Screen.ChannelList,
+              
+                filteredChannels = _uiState.value.channels,
+                channelListFirstVisibleIndex = 0,
+                channelListFirstVisibleScrollOffset = 0,
+            )
         viewModelScope.launch {
             val activeConfig = _uiState.value.xtreamConfigs.find { it.id == _uiState.value.activeXtreamConfigId }
-            if (activeConfig != null && _uiState.value.channels.all { it.group.startsWith("Demo") }) {
-                loadChannelsFromXtream(activeConfig)
+            if (activeConfig != null) {
+                val expectedPlaylistId = "xtream:${activeConfig.host}:${activeConfig.username}"
+                val activePlaylistId = repository.getActivePlaylistId()
+                val shouldAutoRefresh =
+                    activePlaylistId == expectedPlaylistId &&
+                        _uiState.value.channels.isNotEmpty() &&
+                        _uiState.value.channels.all { it.group.startsWith("Demo") }
+                if (shouldAutoRefresh) {
+                    loadChannelsFromXtream(activeConfig)
+                }
             }
         }
     }
@@ -468,6 +525,29 @@ class IPTVViewModel(
         }
     }
 
+    suspend fun validateXtream(
+        host: String,
+        username: String,
+        password: String,
+    ): Boolean =
+        try {
+            val result = repository.testXtreamConnection(host, username, password)
+            result.isSuccess && result.getOrNull() == true
+        } catch (_: Exception) {
+            false
+        }
+
+    suspend fun validateM3U(url: String): Boolean =
+        parseXtreamFromM3U(url)?.let { (host, user, pass) ->
+            return validateXtream(host, user, pass)
+        }
+            ?: try {
+                val channels = repository.loadChannelsFromUrl(url)
+                channels.isNotEmpty()
+            } catch (_: Exception) {
+                false
+            }
+
     fun refreshCurrentPlaylist() {
         val activePlaylistId = _uiState.value.activePlaylistId
         val activePl = _uiState.value.savedPlaylists.find { it.id == activePlaylistId }
@@ -483,11 +563,6 @@ class IPTVViewModel(
                         ?.let { cfg -> loadChannelsFromXtream(cfg, forceRefresh = true) }
             }
             return
-        }
-
-        val activeConfig = _uiState.value.xtreamConfigs.find { it.id == _uiState.value.activeXtreamConfigId }
-        if (activeConfig != null) {
-            loadChannelsFromXtream(activeConfig, forceRefresh = true)
         }
     }
 }

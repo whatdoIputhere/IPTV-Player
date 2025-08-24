@@ -99,6 +99,10 @@ fun iptvApp() {
                                 viewModel.addXtreamFromDialog(name, host, username, password)
                             },
                             onAddM3U = { name, url -> viewModel.addM3UPlaylist(name, url) },
+                            onValidateXtream = { host, username, password ->
+                                viewModel.validateXtream(host, username, password)
+                            },
+                            onValidateM3U = { url -> viewModel.validateM3U(url) },
                             onSelectPlaylist = { id -> viewModel.setActivePlaylist(id) },
                             onDeletePlaylist = { id -> viewModel.removePlaylist(id) },
                             onBack = { viewModel.navigateToChannelList() },
