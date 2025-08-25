@@ -2,6 +2,7 @@ package com.whatdoiputhere.iptvplayer.repository
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.whatdoiputhere.iptvplayer.api.XtreamApiService
@@ -17,6 +18,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.Cache
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
+import okhttp3.Protocol
 import okhttp3.Request
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -72,6 +74,12 @@ class IPTVRepository(
             .Builder()
             .connectionPool(ConnectionPool(3, 30, java.util.concurrent.TimeUnit.SECONDS))
             .cache(Cache(java.io.File(context.cacheDir, "http"), 20L * 1024 * 1024))
+            .followRedirects(true)
+            .followSslRedirects(true)
+            .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .callTimeout(40, java.util.concurrent.TimeUnit.SECONDS)
+            .protocols(listOf(Protocol.HTTP_1_1))
             .build()
     }
     private val parser = M3UParser()
@@ -125,8 +133,7 @@ class IPTVRepository(
                     channels
                 }
             } catch (e: Exception) {
-                println("Error loading M3U playlist: ${e.message}")
-
+                Log.e("IPTV", "Error loading M3U playlist from $url", e)
                 _cachedChannels.value
             }
         }
@@ -175,11 +182,12 @@ class IPTVRepository(
                     }
                 }
 
-                val base = if (config.host.endsWith('/')) config.host else config.host + "/"
+                val base = normalizeBaseUrl(config.host)
                 val retrofit =
                     Retrofit
                         .Builder()
                         .baseUrl(base)
+                        .client(client)
                         .addConverterFactory(GsonConverterFactory.create())
                         .build()
 
@@ -198,7 +206,8 @@ class IPTVRepository(
 
                 val response = service.getLiveStreams(config.username, config.password)
                 if (!response.isSuccessful || response.body() == null) {
-                    throw IOException("Failed to fetch Xtream channels: ${response.code()}")
+                    val err = response.errorBody()?.string()
+                    throw IOException("Failed to fetch Xtream channels: ${response.code()} ${err ?: ""}")
                 }
 
                 val xtreamChannels: List<XtreamChannel> = response.body()!!
@@ -226,6 +235,11 @@ class IPTVRepository(
 
                 channels
             } catch (e: Exception) {
+                Log.e(
+                    "IPTV",
+                    "Error loading channels from Xtream: host=${config.host} user=${config.username}",
+                    e,
+                )
                 if (!forceRefresh) {
                     val cachedChannels =
                         loadPlaylistFromCache("xtream_${config.host}_${config.username}")
@@ -240,6 +254,14 @@ class IPTVRepository(
                 }
             }
         }
+
+    private fun normalizeBaseUrl(host: String): String {
+        var h = host.trim()
+        if (!h.startsWith("http://") && !h.startsWith("https://")) {
+            h = "http://" + h
+        }
+        return if (h.endsWith('/')) h else "$h/"
+    }
 
     private fun loadPlaylistFromCache(key: String): List<Channel> {
         val cacheKey = "${key}_data"
@@ -319,7 +341,7 @@ class IPTVRepository(
         }
     }
 
-    fun deleteXtreamConfig(config: XtreamConfig) {
+    fun deleteXtreamConfig() {
         clearXtreamConfig()
         _activeXtreamConfig.value = null
         _xtreamConfigs.value = emptyList()

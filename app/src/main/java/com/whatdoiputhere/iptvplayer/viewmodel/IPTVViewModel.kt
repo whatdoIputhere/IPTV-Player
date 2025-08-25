@@ -453,10 +453,10 @@ class IPTVViewModel(
         }
     }
 
-    fun deleteXtreamConfig(config: XtreamConfig) {
+    fun deleteXtreamConfig() {
         viewModelScope.launch {
             try {
-                repository.deleteXtreamConfig(config)
+                repository.deleteXtreamConfig()
             } catch (e: Exception) {
                 _uiState.value =
                     _uiState.value.copy(
