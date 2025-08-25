@@ -8,6 +8,8 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -50,6 +52,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -73,7 +76,7 @@ import com.whatdoiputhere.iptvplayer.ui.components.channelItem
 import com.whatdoiputhere.iptvplayer.util.FunFacts
 import com.whatdoiputhere.iptvplayer.viewmodel.IPTVUiState
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun channelListScreen(
     uiState: IPTVUiState,
@@ -205,41 +208,43 @@ fun channelListScreen(
                                 uiState.channelListFirstVisibleScrollOffset ?: 0,
                         )
 
-                    LazyVerticalGrid(
-                        state = gridState,
-                        columns = GridCells.Fixed(2),
-                        modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        items(filteredCategories, key = { it }) { category ->
-                            Card(
-                                modifier =
-                                    Modifier.fillMaxWidth().height(84.dp).clickable {
-                                        onSaveScroll(
-                                            gridState.firstVisibleItemIndex,
-                                            gridState.firstVisibleItemScrollOffset,
-                                        )
-                                        onCategorySelect(category)
-                                    },
-                                colors =
-                                    CardDefaults.cardColors(
-                                        containerColor =
-                                            MaterialTheme.colorScheme
-                                                .primaryContainer,
-                                    ),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-                            ) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.fillMaxSize().padding(6.dp),
+                    CompositionLocalProvider(LocalOverscrollConfiguration provides null) {
+                        LazyVerticalGrid(
+                            state = gridState,
+                            columns = GridCells.Fixed(2),
+                            modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            items(filteredCategories, key = { it }, contentType = { "category" }) { category ->
+                                Card(
+                                    modifier =
+                                        Modifier.fillMaxWidth().height(84.dp).clickable {
+                                            onSaveScroll(
+                                                gridState.firstVisibleItemIndex,
+                                                gridState.firstVisibleItemScrollOffset,
+                                            )
+                                            onCategorySelect(category)
+                                        },
+                                    colors =
+                                        CardDefaults.cardColors(
+                                            containerColor =
+                                                MaterialTheme.colorScheme
+                                                    .primaryContainer,
+                                        ),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                                 ) {
-                                    Text(
-                                        text = category,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.primary,
-                                        textAlign = TextAlign.Center,
-                                    )
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier.fillMaxSize().padding(6.dp),
+                                    ) {
+                                        Text(
+                                            text = category,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            textAlign = TextAlign.Center,
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -353,25 +358,7 @@ fun channelListScreen(
                         }
                     }
                     uiState.selectedCategory != null -> {
-                        val filteredChannels by
-                            remember(
-                                uiState.channels,
-                                uiState.selectedCategory,
-                                uiState.searchQuery,
-                            ) {
-                                derivedStateOf {
-                                    uiState.channels.filter { channel ->
-                                        channel.group == uiState.selectedCategory &&
-                                            (
-                                                uiState.searchQuery.isBlank() ||
-                                                    channel.name.contains(
-                                                        uiState.searchQuery,
-                                                        ignoreCase = true,
-                                                    )
-                                            )
-                                    }
-                                }
-                            }
+                        val filteredChannels = uiState.filteredChannels
                         if (filteredChannels.isEmpty()) {
                             Box(
                                 modifier = Modifier.fillMaxSize(),
@@ -389,31 +376,37 @@ fun channelListScreen(
                                                 ?: 0,
                                     )
 
-                                LazyVerticalGrid(
-                                    state = gridState,
-                                    columns = GridCells.Fixed(3),
-                                    modifier =
-                                        Modifier.fillMaxSize().padding(horizontal = 8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    content = {
-                                        items(filteredChannels, key = { it.name }) { channel ->
-                                            channelItem(
-                                                channel = channel,
-                                                onChannelClick = {
-                                                    onSaveScroll(
-                                                        gridState.firstVisibleItemIndex,
-                                                        gridState
-                                                            .firstVisibleItemScrollOffset,
-                                                    )
-                                                    onChannelClick(channel)
-                                                },
-                                                modifier = Modifier.fillMaxWidth(),
-                                                compact = true,
-                                            )
-                                        }
-                                    },
-                                )
+                                CompositionLocalProvider(LocalOverscrollConfiguration provides null) {
+                                    LazyVerticalGrid(
+                                        state = gridState,
+                                        columns = GridCells.Fixed(3),
+                                        modifier =
+                                            Modifier.fillMaxSize().padding(horizontal = 8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                        content = {
+                                            items(
+                                                filteredChannels,
+                                                key = { it.url },
+                                                contentType = { "channel" },
+                                            ) { channel ->
+                                                channelItem(
+                                                    channel = channel,
+                                                    onChannelClick = {
+                                                        onSaveScroll(
+                                                            gridState.firstVisibleItemIndex,
+                                                            gridState
+                                                                .firstVisibleItemScrollOffset,
+                                                        )
+                                                        onChannelClick(channel)
+                                                    },
+                                                    modifier = Modifier.fillMaxWidth().height(88.dp),
+                                                    compact = true,
+                                                )
+                                            }
+                                        },
+                                    )
+                                }
                             } else {
                                 val listState =
                                     rememberLazyListState(
@@ -424,18 +417,25 @@ fun channelListScreen(
                                                 ?: 0,
                                     )
 
-                                LazyColumn(state = listState) {
-                                    items(filteredChannels, key = { it.name }) { channel ->
-                                        channelItem(
-                                            channel = channel,
-                                            onChannelClick = {
-                                                onSaveScroll(
-                                                    listState.firstVisibleItemIndex,
-                                                    listState.firstVisibleItemScrollOffset,
-                                                )
-                                                onChannelClick(channel)
-                                            },
-                                        )
+                                CompositionLocalProvider(LocalOverscrollConfiguration provides null) {
+                                    LazyColumn(state = listState) {
+                                        items(
+                                            filteredChannels,
+                                            key = { it.url },
+                                            contentType = { "channel" },
+                                        ) { channel ->
+                                            channelItem(
+                                                channel = channel,
+                                                onChannelClick = {
+                                                    onSaveScroll(
+                                                        listState.firstVisibleItemIndex,
+                                                        listState.firstVisibleItemScrollOffset,
+                                                    )
+                                                    onChannelClick(channel)
+                                                },
+                                                modifier = Modifier.fillMaxWidth().height(88.dp),
+                                            )
+                                        }
                                     }
                                 }
                             }

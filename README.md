@@ -18,7 +18,7 @@ A simple Android IPTV app to stream TV channels.
 - Add VOD support
 
 ## Tech stack
-- Kotlin, Coroutines
+- Kotlin
 - Jetpack Compose + Material 3
 - Lifecycle ViewModel + Navigation Compose
 - ExoPlayer

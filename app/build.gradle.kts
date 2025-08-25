@@ -76,6 +76,7 @@ dependencies {
     kapt(libs.room.compiler)
 
     implementation(libs.gson)
+    implementation("androidx.profileinstaller:profileinstaller:1.3.1")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

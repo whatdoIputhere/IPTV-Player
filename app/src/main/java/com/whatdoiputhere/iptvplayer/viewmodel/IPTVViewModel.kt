@@ -366,7 +366,8 @@ class IPTVViewModel(
         viewModelScope.launch {
             val activeConfig = _uiState.value.xtreamConfigs.find { it.id == _uiState.value.activeXtreamConfigId }
             if (activeConfig != null) {
-                val expectedPlaylistId = "xtream:${activeConfig.host}:${activeConfig.username}"
+                val expectedPlaylistId =
+                    "xtream:${activeConfig.host}:${activeConfig.username}"
                 val activePlaylistId = repository.getActivePlaylistId()
                 val shouldAutoRefresh =
                     activePlaylistId == expectedPlaylistId &&
@@ -399,28 +400,21 @@ class IPTVViewModel(
                 selectedCategory = null,
                 searchQuery = "",
             )
+        filterChannels()
     }
 
     private fun filterChannels() {
         val currentState = _uiState.value
         val filtered =
-            currentState.channels.filter { channel ->
-                val matchesSearch =
-                    if (currentState.searchQuery.isBlank()) {
-                        true
-                    } else {
-                        channel.name.contains(currentState.searchQuery, ignoreCase = true)
-                    }
-
-                val matchesGroup =
-                    if (currentState.selectedGroup == "All") {
-                        true
-                    } else {
-                        channel.group == currentState.selectedGroup
-                    }
-
-                matchesSearch && matchesGroup
-            }
+            currentState.channels
+                .asSequence()
+                .filter { ch ->
+                    val group = currentState.selectedCategory ?: currentState.selectedGroup
+                    if (group == null || group == "All") true else ch.group == group
+                }.filter { ch ->
+                    val q = currentState.searchQuery
+                    if (q.isBlank()) true else ch.name.contains(q, ignoreCase = true)
+                }.toList()
 
         _uiState.value = currentState.copy(filteredChannels = filtered)
     }
@@ -438,7 +432,8 @@ class IPTVViewModel(
                     loadChannelsFromXtream(config.copy(id = configId))
                 }
                 val playlistId = "xtream:${config.host}:${config.username}"
-                val displayName = if (config.name.isNotBlank()) config.name else "${config.username}@${config.host}"
+                val displayName =
+                    if (config.name.isNotBlank()) config.name else "${config.username}@${config.host}"
                 val playlist =
                     PlaylistConfig(
                         id = playlistId,
@@ -549,12 +544,11 @@ class IPTVViewModel(
             when (activePl.type) {
                 "M3U" -> loadChannelsFromUrl(activePl.data)
                 "Xtream" ->
-                    runCatching {
-                        com.google.gson
-                            .Gson()
-                            .fromJson(activePl.data, XtreamConfig::class.java)
-                    }.getOrNull()
-                        ?.let { cfg -> loadChannelsFromXtream(cfg, forceRefresh = true) }
+                    runCatching { gson.fromJson(activePl.data, XtreamConfig::class.java) }
+                        .getOrNull()
+                        ?.let { cfg ->
+                            loadChannelsFromXtream(cfg, forceRefresh = true)
+                        }
             }
             return
         }

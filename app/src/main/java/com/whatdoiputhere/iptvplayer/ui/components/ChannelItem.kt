@@ -61,7 +61,8 @@ fun channelItem(
                         ImageRequest
                             .Builder(LocalContext.current)
                             .data(channel.logo)
-                            .crossfade(true)
+                            .size(96, 54)
+                            .crossfade(false)
                             .build(),
                     contentDescription = "Channel logo",
                     modifier =

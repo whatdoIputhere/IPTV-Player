@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
+import okhttp3.Cache
+import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import retrofit2.Retrofit
@@ -21,7 +23,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
 
 class IPTVRepository(
-    context: Context,
+    private val context: Context,
 ) {
     private val playlistPrefs: SharedPreferences =
         context.getSharedPreferences("saved_playlists", Context.MODE_PRIVATE)
@@ -65,7 +67,13 @@ class IPTVRepository(
         }
     }
 
-    private val client = OkHttpClient()
+    private val client: OkHttpClient by lazy {
+        OkHttpClient
+            .Builder()
+            .connectionPool(ConnectionPool(3, 30, java.util.concurrent.TimeUnit.SECONDS))
+            .cache(Cache(java.io.File(context.cacheDir, "http"), 20L * 1024 * 1024))
+            .build()
+    }
     private val parser = M3UParser()
     private val prefs: SharedPreferences =
         context.getSharedPreferences("xtream_configs", Context.MODE_PRIVATE)
@@ -95,7 +103,6 @@ class IPTVRepository(
         if (savedConfig != null) {
             _activeXtreamConfig.value = savedConfig
             _xtreamConfigs.value = listOf(savedConfig)
-            println("DEBUG: Loaded saved Xtream config: ${savedConfig.host}")
         }
     }
 
@@ -154,9 +161,6 @@ class IPTVRepository(
                     if (memoryCache != null &&
                         (currentTime - memoryCacheTime) < memoryCacheValidityMs
                     ) {
-                        println(
-                            "DEBUG: Returning from memory cache (${memoryCache!!.size} channels)",
-                        )
                         _cachedChannels.value = memoryCache!!
                         return@withContext memoryCache!!
                     }
@@ -164,17 +168,12 @@ class IPTVRepository(
                     val cachedChannels =
                         loadPlaylistFromCache("xtream_${config.host}_${config.username}")
                     if (cachedChannels.isNotEmpty()) {
-                        println(
-                            "DEBUG: Returning from persistent cache (${cachedChannels.size} channels)",
-                        )
                         memoryCache = cachedChannels
                         memoryCacheTime = currentTime
                         _cachedChannels.value = cachedChannels
                         return@withContext cachedChannels
                     }
                 }
-
-                println("DEBUG: Loading fresh data from Xtream API")
 
                 val base = if (config.host.endsWith('/')) config.host else config.host + "/"
                 val retrofit =
@@ -227,8 +226,6 @@ class IPTVRepository(
 
                 channels
             } catch (e: Exception) {
-                println("Error loading Xtream channels: ${e.message}")
-
                 if (!forceRefresh) {
                     val cachedChannels =
                         loadPlaylistFromCache("xtream_${config.host}_${config.username}")
@@ -272,7 +269,6 @@ class IPTVRepository(
             val type = object : TypeToken<List<Channel>>() {}.type
             gson.fromJson(cachedData, type) ?: emptyList()
         } catch (e: Exception) {
-            println("Error parsing cached playlist: ${e.message}")
             emptyList()
         }
     }
@@ -293,24 +289,23 @@ class IPTVRepository(
     }
 
     fun clearAllPlaylistCaches() {
-        playlistCache.edit().clear().apply()
-        println("DEBUG: Cleared all playlist caches")
+        val editor = playlistCache.edit()
+        editor.clear()
+        editor.apply()
     }
 
     suspend fun loadChannelsFromUrl(url: String) = loadChannelsFromM3U(url)
 
     fun saveXtreamConfig(config: XtreamConfig): Long {
-        prefs
-            .edit()
-            .putString("host", config.host)
-            .putString("username", config.username)
-            .putString("password", config.password)
-            .apply()
+        val prefsEditor = prefs.edit()
+        prefsEditor.putString("host", config.host)
+        prefsEditor.putString("username", config.username)
+        prefsEditor.putString("password", config.password)
+        prefsEditor.apply()
 
         val activeConfig = config.copy(isActive = true)
         _activeXtreamConfig.value = activeConfig
         _xtreamConfigs.value = listOf(activeConfig)
-        println("DEBUG: Saved Xtream config: ${config.host}")
 
         return config.id
     }
@@ -321,12 +316,10 @@ class IPTVRepository(
             val updated = current.copy(id = id, isActive = true)
             _activeXtreamConfig.value = updated
             _xtreamConfigs.value = listOf(updated)
-            println("DEBUG: Set active Xtream config ID: $id")
         }
     }
 
     fun deleteXtreamConfig(config: XtreamConfig) {
-        println("DEBUG: Deleting Xtream config: ${config.host}")
         clearXtreamConfig()
         _activeXtreamConfig.value = null
         _xtreamConfigs.value = emptyList()

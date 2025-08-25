@@ -148,7 +148,7 @@ fun savedPlaylistsScreen(
                 }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(playlists) { playlist ->
+                    items(playlists, key = { it.id }) { playlist ->
                         ListItem(
                             headlineContent = { Text(playlist.displayName) },
                             supportingContent = { Text(playlist.type) },
