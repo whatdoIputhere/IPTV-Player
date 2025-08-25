@@ -18,7 +18,8 @@ import java.util.concurrent.TimeUnit
 class VideoPlayerViewModel(
     application: Application,
 ) : AndroidViewModel(application) {
-    val exoPlayer: ExoPlayer
+    var exoPlayer: ExoPlayer
+        private set
 
     init {
         val appContext = application.applicationContext
@@ -47,14 +48,20 @@ class VideoPlayerViewModel(
                 .setBufferDurationsMs(20000, 120000, 2000, 5000)
                 .build()
 
-        exoPlayer =
-            ExoPlayer
-                .Builder(appContext)
-                .setMediaSourceFactory(mediaSourceFactory)
-                .setLoadControl(loadControl)
-                .setAudioAttributes(AudioAttributes.DEFAULT, true)
-                .build()
+        exoPlayer = buildPlayer(appContext, mediaSourceFactory, loadControl)
     }
+
+    private fun buildPlayer(
+        appContext: android.content.Context,
+        mediaSourceFactory: DefaultMediaSourceFactory,
+        loadControl: DefaultLoadControl,
+    ): ExoPlayer =
+        ExoPlayer
+            .Builder(appContext)
+            .setMediaSourceFactory(mediaSourceFactory)
+            .setLoadControl(loadControl)
+            .setAudioAttributes(AudioAttributes.DEFAULT, true)
+            .build()
 
     fun setUrl(url: String) {
         val currentUri =
@@ -93,6 +100,52 @@ class VideoPlayerViewModel(
                 exoPlayer.seekTo(prevPosition)
             } catch (_: Throwable) {
             }
+        }
+    }
+
+    fun stopPlayback(
+        clear: Boolean = false,
+        release: Boolean = false,
+    ) {
+        try {
+            exoPlayer.playWhenReady = false
+            exoPlayer.stop()
+            if (clear) {
+                exoPlayer.clearMediaItems()
+            }
+            if (release) {
+                try {
+                    exoPlayer.release()
+                } finally {
+                    val appContext = getApplication<Application>().applicationContext
+
+                    val logging =
+                        okhttp3.logging
+                            .HttpLoggingInterceptor(
+                                object : okhttp3.logging.HttpLoggingInterceptor.Logger {
+                                    override fun log(message: String) {}
+                                },
+                            ).apply { level = okhttp3.logging.HttpLoggingInterceptor.Level.BASIC }
+                    val okHttpClient =
+                        okhttp3.OkHttpClient
+                            .Builder()
+                            .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+                            .readTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+                            .addInterceptor(logging)
+                            .build()
+                    val dataSourceFactory =
+                        androidx.media3.datasource.okhttp.OkHttpDataSource
+                            .Factory(okHttpClient)
+                    val mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory)
+                    val loadControl =
+                        DefaultLoadControl
+                            .Builder()
+                            .setBufferDurationsMs(20000, 120000, 2000, 5000)
+                            .build()
+                    exoPlayer = buildPlayer(appContext, mediaSourceFactory, loadControl)
+                }
+            }
+        } catch (_: Throwable) {
         }
     }
 

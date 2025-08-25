@@ -1,4 +1,5 @@
 package com.whatdoiputhere.iptvplayer.ui.screens
+
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -42,6 +43,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.PlayerView
 import com.whatdoiputhere.iptvplayer.R
@@ -88,6 +92,12 @@ fun videoPlayerScreen(
         vm.setUrl(channel.url)
     }
 
+    DisposableEffect(Unit) {
+        onDispose {
+            vm.stopPlayback(clear = true, release = true)
+        }
+    }
+
     fun restoreAndUnlock(prevConfig: Int?) {
         prevConfig?.let { prev ->
             val mapped =
@@ -104,8 +114,23 @@ fun videoPlayerScreen(
     }
 
     BackHandler {
+        vm.stopPlayback(clear = true)
         restoreAndUnlock(orientationBeforeStream)
         onBackClick()
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer =
+            LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_STOP) {
+                    vm.stopPlayback()
+                }
+            }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 
     var controlsVisible by remember { mutableStateOf(true) }
@@ -181,6 +206,7 @@ fun videoPlayerScreen(
                 ) {
                     IconButton(
                         onClick = {
+                            vm.stopPlayback(clear = true)
                             restoreAndUnlock(orientationBeforeStream)
                             onBackClick()
                         },

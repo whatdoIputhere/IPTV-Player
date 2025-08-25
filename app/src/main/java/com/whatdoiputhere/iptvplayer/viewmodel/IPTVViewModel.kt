@@ -410,7 +410,7 @@ class IPTVViewModel(
                 .asSequence()
                 .filter { ch ->
                     val group = currentState.selectedCategory ?: currentState.selectedGroup
-                    if (group == null || group == "All") true else ch.group == group
+                    if (group == "All") true else ch.group == group
                 }.filter { ch ->
                     val q = currentState.searchQuery
                     if (q.isBlank()) true else ch.name.contains(q, ignoreCase = true)

@@ -16,6 +16,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -210,10 +211,17 @@ fun savedPlaylistsScreen(
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
+                    if (m3uValidating) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            CircularProgressIndicator(modifier = Modifier.height(20.dp))
+                            Text(stringResource(id = R.string.validating_m3u_url))
+                        }
+                    }
                 }
             },
             confirmButton = {
                 TextButton(
+                    enabled = !m3uValidating,
                     onClick = {
                         if (m3uUrl.isNotBlank() && !m3uValidating) {
                             m3uValidating = true
@@ -236,6 +244,7 @@ fun savedPlaylistsScreen(
             },
             dismissButton = {
                 TextButton(
+                    enabled = !m3uValidating,
                     onClick = {
                         showM3UDialog = false
                         m3uName = ""
@@ -290,10 +299,17 @@ fun savedPlaylistsScreen(
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
+                    if (xtreamValidating) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            CircularProgressIndicator(modifier = Modifier.height(20.dp))
+                            Text(stringResource(id = R.string.testing_connection))
+                        }
+                    }
                 }
             },
             confirmButton = {
                 TextButton(
+                    enabled = !xtreamValidating,
                     onClick = {
                         val inputsValid =
                             xtreamHost.isNotBlank() &&
@@ -328,6 +344,7 @@ fun savedPlaylistsScreen(
             },
             dismissButton = {
                 TextButton(
+                    enabled = !xtreamValidating,
                     onClick = {
                         showXtreamDialog = false
                         xtreamName = ""
