@@ -61,6 +61,7 @@ import kotlinx.coroutines.launch
 fun savedPlaylistsScreen(
     playlists: List<PlaylistConfig>,
     activePlaylistId: String?,
+    loadingPlaylistId: String?,
     onAddXtream: (String, String, String, String) -> Unit,
     onAddM3U: (String, String) -> Unit,
     onValidateXtream: suspend (String, String, String) -> Boolean,
@@ -175,14 +176,22 @@ fun savedPlaylistsScreen(
                             headlineContent = { Text(playlist.displayName) },
                             supportingContent = { Text(playlist.type) },
                             trailingContent = {
-                                if (playlist.id == activePlaylistId) {
-                                    Text(
-                                        stringResource(id = R.string.active),
-                                        color = MaterialTheme.colorScheme.primary,
-                                    )
-                                } else {
-                                    Button(onClick = { onSelectPlaylist(playlist.id) }) {
-                                        Text(stringResource(id = R.string.set_active))
+                                when {
+                                    playlist.id == loadingPlaylistId -> {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                                        }
+                                    }
+                                    playlist.id == activePlaylistId -> {
+                                        Text(
+                                            stringResource(id = R.string.active),
+                                            color = MaterialTheme.colorScheme.primary,
+                                        )
+                                    }
+                                    else -> {
+                                        Button(onClick = { onSelectPlaylist(playlist.id) }) {
+                                            Text(stringResource(id = R.string.set_active))
+                                        }
                                     }
                                 }
                             },

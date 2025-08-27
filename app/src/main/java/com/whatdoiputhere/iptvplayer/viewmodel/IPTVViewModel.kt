@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
+import com.whatdoiputhere.iptvplayer.R
 import com.whatdoiputhere.iptvplayer.model.Channel
 import com.whatdoiputhere.iptvplayer.model.PlaylistConfig
 import com.whatdoiputhere.iptvplayer.model.XtreamConfig
@@ -22,6 +23,7 @@ data class IPTVUiState(
     val isLoading: Boolean = false,
     val loadingStatus: String = "",
     val loadingProgress: Float = 0f,
+    val loadingPlaylistId: String? = null,
     val error: String? = null,
     val searchQuery: String = "",
     val selectedGroup: String = "All",
@@ -87,7 +89,6 @@ class IPTVViewModel(
             )
         addPlaylist(cfg)
         setActivePlaylist(id)
-        loadChannelsFromUrl(url)
     }
 
     private fun parseXtreamFromM3U(url: String): Triple<String, String, String>? {
@@ -138,8 +139,6 @@ class IPTVViewModel(
 
         repository.saveXtreamConfig(config)
         repository.setActiveXtreamConfig(config.id)
-
-        loadChannelsFromXtream(config)
     }
 
     fun setActivePlaylist(id: String) {
@@ -147,12 +146,22 @@ class IPTVViewModel(
         val playlists = repository.getAllSavedPlaylists()
         val selected = playlists.find { it.id == id }
         loadSavedPlaylists()
+
+        _uiState.value =
+            _uiState.value.copy(
+                loadingPlaylistId = id,
+                channels = emptyList(),
+                filteredChannels = emptyList(),
+                selectedCategory = null,
+                selectedGroup = "All",
+                searchQuery = "",
+            )
         selected?.let { pl ->
             when (pl.type) {
-                "M3U" -> loadChannelsFromUrl(pl.data)
+                "M3U" -> loadChannelsFromUrl(pl.data, forceRefresh = true)
                 "Xtream" ->
                     runCatching { gson.fromJson(pl.data, XtreamConfig::class.java) }.getOrNull()?.let { cfg ->
-                        loadChannelsFromXtream(cfg)
+                        loadChannelsFromXtream(cfg, forceRefresh = true)
                     }
                 else -> {
                     _uiState.value =
@@ -193,6 +202,21 @@ class IPTVViewModel(
             try {
                 loadXtreamConfigs()
                 loadSavedPlaylists()
+
+                val activeId = repository.getActivePlaylistId()
+                val playlists = repository.getAllSavedPlaylists()
+                if (_uiState.value.channels.isEmpty() && activeId != null) {
+                    val active = playlists.find { it.id == activeId }
+                    when (active?.type) {
+                        "M3U" -> loadChannelsFromUrl(active.data)
+                        "Xtream" ->
+                            runCatching { gson.fromJson(active.data, XtreamConfig::class.java) }
+                                .getOrNull()
+                                ?.let { cfg ->
+                                    loadChannelsFromXtream(cfg)
+                                }
+                    }
+                }
             } catch (e: Exception) {
 
                 _uiState.value =
@@ -233,27 +257,30 @@ class IPTVViewModel(
         }
     }
 
-    fun loadChannelsFromUrl(url: String) {
+    fun loadChannelsFromUrl(
+        url: String,
+        forceRefresh: Boolean = false,
+    ) {
         viewModelScope.launch {
             _uiState.value =
                 _uiState.value.copy(
                     isLoading = true,
                     error = null,
-                    loadingStatus = "Connecting to server...",
+                    loadingStatus = getApplication<Application>().getString(R.string.loading),
                     loadingProgress = 0.2f,
                 )
             try {
                 _uiState.value =
                     _uiState.value.copy(
-                        loadingStatus = "Downloading playlist...",
+                        loadingStatus = getApplication<Application>().getString(R.string.loading),
                         loadingProgress = 0.5f,
                     )
 
-                val channels = repository.loadChannelsFromUrl(url)
+                val channels = repository.loadChannelsFromUrl(url, forceRefresh)
 
                 _uiState.value =
                     _uiState.value.copy(
-                        loadingStatus = "Processing channels...",
+                        loadingStatus = getApplication<Application>().getString(R.string.loading),
                         loadingProgress = 0.8f,
                     )
 
@@ -264,6 +291,8 @@ class IPTVViewModel(
                         isLoading = false,
                         loadingStatus = "",
                         loadingProgress = 1.0f,
+                        currentScreen = Screen.ChannelList,
+                        loadingPlaylistId = null,
                     )
             } catch (e: Exception) {
                 _uiState.value =
@@ -272,6 +301,7 @@ class IPTVViewModel(
                         loadingStatus = "",
                         loadingProgress = 0f,
                         error = "Failed to load channels: ${e.message}",
+                        loadingPlaylistId = null,
                     )
             }
         }
@@ -287,7 +317,7 @@ class IPTVViewModel(
                     _uiState.value.copy(
                         isLoading = true,
                         error = null,
-                        loadingStatus = "Loading...",
+                        loadingStatus = getApplication<Application>().getString(R.string.loading),
                         loadingProgress = 0.5f,
                     )
             } else {
@@ -295,7 +325,7 @@ class IPTVViewModel(
                     _uiState.value.copy(
                         isLoading = true,
                         error = null,
-                        loadingStatus = "Refreshing ${config.name}...",
+                        loadingStatus = getApplication<Application>().getString(R.string.loading),
                         loadingProgress = 0.1f,
                     )
             }
@@ -311,6 +341,7 @@ class IPTVViewModel(
                         loadingStatus = "",
                         loadingProgress = 1.0f,
                         currentScreen = Screen.ChannelList,
+                        loadingPlaylistId = null,
                     )
             } catch (e: Exception) {
                 _uiState.value =
@@ -319,6 +350,7 @@ class IPTVViewModel(
                         loadingStatus = "",
                         loadingProgress = 0f,
                         error = "Failed to load channels from Xtream: ${e.message}",
+                        loadingPlaylistId = null,
                     )
             }
         }
@@ -494,9 +526,14 @@ class IPTVViewModel(
                 val result = repository.testXtreamConnection(config.host, config.username, config.password)
                 val testMessage =
                     if (result.isSuccess && result.getOrNull() == true) {
-                        "✓ Connection successful!"
+                        "✓ " + getApplication<Application>().getString(R.string.connection_successful)
                     } else {
-                        "✗ Connection failed: ${result.exceptionOrNull()?.message ?: "Unknown error"}"
+                        "✗ " +
+                            getApplication<Application>()
+                                .getString(
+                                    R.string.connection_failed_with_message,
+                                    result.exceptionOrNull()?.message ?: "Unknown error",
+                                )
                     }
 
                 _uiState.value =
@@ -508,7 +545,13 @@ class IPTVViewModel(
                 _uiState.value =
                     _uiState.value.copy(
                         isTestingConnection = false,
-                        testResult = "✗ Connection failed: ${e.message}",
+                        testResult =
+                            "✗ " +
+                                getApplication<Application>()
+                                    .getString(
+                                        R.string.connection_failed_with_message,
+                                        e.message ?: "Unknown error",
+                                    ),
                     )
             }
         }
@@ -542,7 +585,7 @@ class IPTVViewModel(
         val activePl = _uiState.value.savedPlaylists.find { it.id == activePlaylistId }
         if (activePl != null) {
             when (activePl.type) {
-                "M3U" -> loadChannelsFromUrl(activePl.data)
+                "M3U" -> loadChannelsFromUrl(activePl.data, forceRefresh = true)
                 "Xtream" ->
                     runCatching { gson.fromJson(activePl.data, XtreamConfig::class.java) }
                         .getOrNull()

@@ -19,7 +19,7 @@
 
     <string name="loading_iptv_channels">Loading IPTV channels...</string>
     <string name="loading_from_cache">Loading from cache...</string>
-    <string name="loading">Loading</string>
+    <string name="loading">Loading...</string>
 
     <string name="saved_playlists">Saved Playlists</string>
     <string name="back">Back</string>
@@ -47,6 +47,8 @@
     <string name="invalid_xtream">Could not validate Xtream credentials. Check host/username/password.</string>
     <string name="validating_m3u_url">Validating M3U URL…</string>
     <string name="testing_connection">Testing connection…</string>
+    <string name="connection_successful">Connection successful!</string>
+    <string name="connection_failed_with_message">Connection failed: %1$s</string>
 
     <string name="toggle_rotation">Toggle rotation</string>
     <string name="stream_unavailable_message">Stream could not be played</string>

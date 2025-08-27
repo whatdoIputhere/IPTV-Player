@@ -95,6 +95,7 @@ fun iptvApp() {
                         com.whatdoiputhere.iptvplayer.ui.screens.savedPlaylistsScreen(
                             playlists = uiState.savedPlaylists,
                             activePlaylistId = uiState.activePlaylistId,
+                            loadingPlaylistId = uiState.loadingPlaylistId,
                             onAddXtream = { name, host, username, password ->
                                 viewModel.addXtreamFromDialog(name, host, username, password)
                             },

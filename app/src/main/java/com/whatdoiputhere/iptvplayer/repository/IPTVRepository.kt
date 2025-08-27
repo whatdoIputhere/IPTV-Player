@@ -118,9 +118,29 @@ class IPTVRepository(
 
     fun getActiveXtreamConfig(): Flow<XtreamConfig?> = _activeXtreamConfig.asStateFlow()
 
-    suspend fun loadChannelsFromM3U(url: String): List<Channel> =
+    suspend fun loadChannelsFromM3U(
+        url: String,
+        forceRefresh: Boolean = false,
+    ): List<Channel> =
         withContext(Dispatchers.IO) {
             try {
+                val cacheKey = "m3u_${url.trim()}"
+                if (!forceRefresh) {
+                    val now = System.currentTimeMillis()
+                    if (memoryCache != null && (now - memoryCacheTime) < memoryCacheValidityMs) {
+                        _cachedChannels.value = memoryCache!!
+                        return@withContext memoryCache!!
+                    }
+
+                    val cached = loadPlaylistFromCache(cacheKey)
+                    if (cached.isNotEmpty()) {
+                        memoryCache = cached
+                        memoryCacheTime = now
+                        _cachedChannels.value = cached
+                        return@withContext cached
+                    }
+                }
+
                 val request = Request.Builder().url(url).build()
 
                 client.newCall(request).execute().use { response ->
@@ -129,11 +149,21 @@ class IPTVRepository(
                     }
                     val playlistContent = response.body?.string().orEmpty()
                     val channels = parser.parse(playlistContent)
+
+                    savePlaylistToCache(cacheKey, channels)
+                    memoryCache = channels
+                    memoryCacheTime = System.currentTimeMillis()
+
                     _cachedChannels.value = channels
                     channels
                 }
             } catch (e: Exception) {
                 Log.e("IPTV", "Error loading M3U playlist from $url", e)
+                val fallback = loadPlaylistFromCache("m3u_${url.trim()}")
+                if (fallback.isNotEmpty()) {
+                    _cachedChannels.value = fallback
+                    return@withContext fallback
+                }
                 _cachedChannels.value
             }
         }
@@ -316,7 +346,10 @@ class IPTVRepository(
         editor.apply()
     }
 
-    suspend fun loadChannelsFromUrl(url: String) = loadChannelsFromM3U(url)
+    suspend fun loadChannelsFromUrl(
+        url: String,
+        forceRefresh: Boolean = false,
+    ) = loadChannelsFromM3U(url, forceRefresh)
 
     fun saveXtreamConfig(config: XtreamConfig): Long {
         val prefsEditor = prefs.edit()
