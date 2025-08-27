@@ -30,12 +30,14 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -150,12 +152,22 @@ fun savedPlaylistsScreen(
                         }
                     }
                 },
+                colors =
+                    androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                        MaterialTheme.colorScheme.background,
+                        MaterialTheme.colorScheme.onBackground,
+                        MaterialTheme.colorScheme.onBackground,
+                        MaterialTheme.colorScheme.onBackground,
+                    ),
             )
         },
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
             if (playlists.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -195,6 +207,14 @@ fun savedPlaylistsScreen(
                                     }
                                 }
                             },
+                            colors =
+                                androidx.compose.material3.ListItemDefaults.colors(
+                                    containerColor = MaterialTheme.colorScheme.background,
+                                    headlineColor = MaterialTheme.colorScheme.onBackground,
+                                    supportingColor = MaterialTheme.colorScheme.onBackground,
+                                    leadingIconColor = MaterialTheme.colorScheme.onBackground,
+                                    trailingIconColor = MaterialTheme.colorScheme.onBackground,
+                                ),
                         )
                         Row(
                             modifier =

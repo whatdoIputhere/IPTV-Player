@@ -163,6 +163,13 @@ fun channelListScreen(
                         }
                     }
                 },
+                colors =
+                    androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                        MaterialTheme.colorScheme.background,
+                        MaterialTheme.colorScheme.onBackground,
+                        MaterialTheme.colorScheme.onBackground,
+                        MaterialTheme.colorScheme.onBackground,
+                    ),
             )
         },
     ) { innerPadding ->
@@ -494,18 +501,6 @@ fun enhancedLoadingScreen(
             label = "rotation",
         )
 
-    val alpha by
-        infiniteTransition.animateFloat(
-            initialValue = 0.3f,
-            targetValue = 0.7f,
-            animationSpec =
-                infiniteRepeatable(
-                    animation = tween(1500, easing = FastOutSlowInEasing),
-                    repeatMode = RepeatMode.Reverse,
-                ),
-            label = "pulse",
-        )
-
     val scale by
         infiniteTransition.animateFloat(
             initialValue = 0.95f,
@@ -522,7 +517,7 @@ fun enhancedLoadingScreen(
         modifier =
             Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = alpha)),
+                .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center,
     ) {
         Column(
@@ -542,7 +537,7 @@ fun enhancedLoadingScreen(
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
                         contentDescription =
-                            stringResource(id = com.whatdoiputhere.iptvplayer.R.string.loading),
+                            stringResource(id = R.string.loading),
                         modifier = Modifier.size(48.dp).rotate(rotation),
                         tint = MaterialTheme.colorScheme.primary,
                     )
@@ -588,7 +583,7 @@ fun enhancedLoadingScreen(
                     Text(
                         text =
                             stringResource(
-                                id = com.whatdoiputhere.iptvplayer.R.string.loading_iptv_channels,
+                                id = R.string.loading_iptv_channels,
                             ),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -646,7 +641,7 @@ fun loadingOverlay(
                 Text(
                     text =
                         status.ifBlank {
-                            stringResource(id = com.whatdoiputhere.iptvplayer.R.string.loading_from_cache)
+                            stringResource(id = R.string.loading_from_cache)
                         },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,

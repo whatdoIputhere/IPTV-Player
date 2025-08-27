@@ -3,6 +3,7 @@ package com.whatdoiputhere.iptvplayer.repository
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.core.content.edit
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.whatdoiputhere.iptvplayer.api.XtreamApiService
@@ -40,7 +41,7 @@ class IPTVRepository(
             playlists.add(playlist)
         }
         val json = gson.toJson(playlists)
-        playlistPrefs.edit().putString("playlists", json).apply()
+        playlistPrefs.edit { putString("playlists", json) }
     }
 
     fun getAllSavedPlaylists(): List<com.whatdoiputhere.iptvplayer.model.PlaylistConfig> {
@@ -48,13 +49,13 @@ class IPTVRepository(
         return try {
             val type = object : TypeToken<List<com.whatdoiputhere.iptvplayer.model.PlaylistConfig>>() {}.type
             gson.fromJson(json, type) ?: emptyList()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             emptyList()
         }
     }
 
     fun setActivePlaylist(id: String) {
-        playlistPrefs.edit().putString(activePlaylistKey, id).apply()
+        playlistPrefs.edit { putString(activePlaylistKey, id) }
     }
 
     fun getActivePlaylistId(): String? = playlistPrefs.getString(activePlaylistKey, null)
@@ -62,10 +63,10 @@ class IPTVRepository(
     fun removePlaylist(id: String) {
         val playlists = getAllSavedPlaylists().filterNot { it.id == id }
         val json = gson.toJson(playlists)
-        playlistPrefs.edit().putString("playlists", json).apply()
+        playlistPrefs.edit { putString("playlists", json) }
 
         if (getActivePlaylistId() == id) {
-            playlistPrefs.edit().remove(activePlaylistKey).apply()
+            playlistPrefs.edit { remove(activePlaylistKey) }
         }
     }
 
@@ -181,7 +182,7 @@ class IPTVRepository(
     }
 
     fun clearXtreamConfig() {
-        prefs.edit().clear().apply()
+        prefs.edit { clear() }
         _activeXtreamConfig.value = null
         _xtreamConfigs.value = emptyList()
         println("DEBUG: Cleared Xtream config")
@@ -288,7 +289,7 @@ class IPTVRepository(
     private fun normalizeBaseUrl(host: String): String {
         var h = host.trim()
         if (!h.startsWith("http://") && !h.startsWith("https://")) {
-            h = "http://" + h
+            h = "http://$h"
         }
         return if (h.endsWith('/')) h else "$h/"
     }
@@ -308,10 +309,10 @@ class IPTVRepository(
 
         if (cacheAgeMs > maxCacheAgeMs) {
             playlistCache
-                .edit()
-                .remove(cacheKey)
-                .remove(timestampKey)
-                .apply()
+                .edit {
+                    remove(cacheKey)
+                        .remove(timestampKey)
+                }
             return emptyList()
         }
 
@@ -320,7 +321,7 @@ class IPTVRepository(
         return try {
             val type = object : TypeToken<List<Channel>>() {}.type
             gson.fromJson(cachedData, type) ?: emptyList()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             emptyList()
         }
     }
@@ -334,16 +335,10 @@ class IPTVRepository(
 
         val json = gson.toJson(channels)
         playlistCache
-            .edit()
-            .putString(cacheKey, json)
-            .putLong(timestampKey, System.currentTimeMillis())
-            .apply()
-    }
-
-    fun clearAllPlaylistCaches() {
-        val editor = playlistCache.edit()
-        editor.clear()
-        editor.apply()
+            .edit {
+                putString(cacheKey, json)
+                    .putLong(timestampKey, System.currentTimeMillis())
+            }
     }
 
     suspend fun loadChannelsFromUrl(
@@ -352,11 +347,11 @@ class IPTVRepository(
     ) = loadChannelsFromM3U(url, forceRefresh)
 
     fun saveXtreamConfig(config: XtreamConfig): Long {
-        val prefsEditor = prefs.edit()
-        prefsEditor.putString("host", config.host)
-        prefsEditor.putString("username", config.username)
-        prefsEditor.putString("password", config.password)
-        prefsEditor.apply()
+        prefs.edit {
+            putString("host", config.host)
+            putString("username", config.username)
+            putString("password", config.password)
+        }
 
         val activeConfig = config.copy(isActive = true)
         _activeXtreamConfig.value = activeConfig
@@ -392,11 +387,4 @@ class IPTVRepository(
         } catch (e: Exception) {
             Result.failure(e)
         }
-
-    fun clearChannelCache() {
-        clearAllPlaylistCaches()
-        memoryCache = null
-        memoryCacheTime = 0
-        _cachedChannels.value = emptyList()
-    }
 }
