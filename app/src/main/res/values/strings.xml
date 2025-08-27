@@ -46,7 +46,7 @@
     <string name="invalid_m3u_url">Could not validate M3U URL. Check the link and try again.</string>
     <string name="invalid_xtream">Could not validate Xtream credentials. Check host/username/password.</string>
     <string name="validating_m3u_url">Validating M3U URL…</string>
-    <string name="testing_connection">Testing credentials…</string>
+    <string name="testing_connection">Testing connection…</string>
 
     <string name="toggle_rotation">Toggle rotation</string>
     <string name="stream_unavailable_message">Stream could not be played</string>

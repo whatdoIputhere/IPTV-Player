@@ -18,12 +18,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -33,6 +35,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
@@ -107,7 +110,26 @@ fun channelListScreen(
                     Text(
                         text = stringResource(id = R.string.app_name),
                         style = MaterialTheme.typography.titleSmall,
+                        modifier =
+                            Modifier
+                                .fillMaxHeight()
+                                .wrapContentHeight(Alignment.CenterVertically),
                     )
+                },
+                navigationIcon = {
+                    if (uiState.selectedCategory != null) {
+                        IconButton(
+                            onClick = {
+                                categorySearchQuery = ""
+                                onBackToCategories()
+                            },
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(id = R.string.back),
+                            )
+                        }
+                    }
                 },
                 actions = {
                     if (uiState.channels.isNotEmpty()) {
@@ -178,7 +200,7 @@ fun channelListScreen(
                             )
                         },
                         textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                        modifier = Modifier.fillMaxWidth().padding(12.dp).height(58.dp),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 12.dp).height(58.dp),
                         singleLine = true,
                         maxLines = 1,
                     )
@@ -267,7 +289,7 @@ fun channelListScreen(
                         modifier =
                             Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                                .padding(horizontal = 12.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         OutlinedTextField(
@@ -291,26 +313,12 @@ fun channelListScreen(
                             },
                             textStyle =
                                 MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                            modifier = Modifier.weight(1f).height(58.dp).alignByBaseline(),
+                            modifier = Modifier.fillMaxWidth().height(58.dp),
                             singleLine = true,
                             maxLines = 1,
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Button(
-                            onClick = {
-                                categorySearchQuery = ""
-                                onBackToCategories()
-                            },
-                            modifier = Modifier.height(58.dp).alignByBaseline(),
-                            contentPadding = PaddingValues(horizontal = 12.dp),
-                        ) {
-                            Text(
-                                stringResource(id = R.string.categories),
-                                style = MaterialTheme.typography.labelLarge,
-                            )
-                        }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
             }
 

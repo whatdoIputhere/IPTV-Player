@@ -4,13 +4,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -38,7 +44,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -60,6 +70,13 @@ fun savedPlaylistsScreen(
     onBack: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
+
+    val m3uNameRequester = remember { FocusRequester() }
+    val m3uUrlRequester = remember { FocusRequester() }
+    val xNameRequester = remember { FocusRequester() }
+    val xHostRequester = remember { FocusRequester() }
+    val xUserRequester = remember { FocusRequester() }
+    val xPassRequester = remember { FocusRequester() }
     var showM3UDialog by remember { mutableStateOf(false) }
     var showXtreamDialog by remember { mutableStateOf(false) }
     var showAddMenu by remember { mutableStateOf(false) }
@@ -82,11 +99,15 @@ fun savedPlaylistsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                modifier = Modifier.height(48.dp),
+                modifier = Modifier.height(56.dp),
                 title = {
                     Text(
                         stringResource(id = R.string.saved_playlists),
                         style = MaterialTheme.typography.titleSmall,
+                        modifier =
+                            Modifier
+                                .fillMaxHeight()
+                                .wrapContentHeight(Alignment.CenterVertically),
                     )
                 },
                 navigationIcon = {
@@ -195,14 +216,24 @@ fun savedPlaylistsScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedTextField(
+                        modifier = Modifier.focusRequester(m3uNameRequester),
                         value = m3uName,
                         onValueChange = { m3uName = it },
                         label = { Text(stringResource(id = R.string.display_name)) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { m3uUrlRequester.requestFocus() }),
                     )
                     OutlinedTextField(
+                        modifier = Modifier.focusRequester(m3uUrlRequester),
                         value = m3uUrl,
                         onValueChange = { m3uUrl = it },
                         label = { Text(stringResource(id = R.string.m3u_url)) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Done),
+                        keyboardActions =
+                            KeyboardActions(onDone = {
+                            }),
                     )
                     if (m3uHasError) {
                         Text(
@@ -213,7 +244,7 @@ fun savedPlaylistsScreen(
                     }
                     if (m3uValidating) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            CircularProgressIndicator(modifier = Modifier.height(20.dp))
+                            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                             Text(stringResource(id = R.string.validating_m3u_url))
                         }
                     }
@@ -268,41 +299,67 @@ fun savedPlaylistsScreen(
             },
             title = { Text(stringResource(id = R.string.add_xtream_code)) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedTextField(
-                        value = xtreamName,
-                        onValueChange = { xtreamName = it },
-                        label = { Text(stringResource(id = R.string.display_name)) },
-                    )
-                    OutlinedTextField(
-                        value = xtreamHost,
-                        onValueChange = { xtreamHost = it },
-                        label = { Text(stringResource(id = R.string.host_url)) },
-                        placeholder = { Text(stringResource(id = R.string.example_host)) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-                    )
-                    OutlinedTextField(
-                        value = xtreamUsername,
-                        onValueChange = { xtreamUsername = it },
-                        label = { Text(stringResource(id = R.string.username)) },
-                    )
-                    OutlinedTextField(
-                        value = xtreamPassword,
-                        onValueChange = { xtreamPassword = it },
-                        label = { Text(stringResource(id = R.string.password)) },
-                        visualTransformation = PasswordVisualTransformation(),
-                    )
-                    if (xtreamHasError) {
-                        Text(
-                            stringResource(id = R.string.invalid_xtream),
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall,
+                androidx.compose.foundation.rememberScrollState().let { scrollState ->
+                    Column(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 0.dp, max = 400.dp)
+                                .verticalScroll(scrollState),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        OutlinedTextField(
+                            modifier = Modifier.focusRequester(xNameRequester),
+                            value = xtreamName,
+                            onValueChange = { xtreamName = it },
+                            label = { Text(stringResource(id = R.string.display_name)) },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                            keyboardActions = KeyboardActions(onNext = { xHostRequester.requestFocus() }),
                         )
-                    }
-                    if (xtreamValidating) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            CircularProgressIndicator(modifier = Modifier.height(20.dp))
-                            Text(stringResource(id = R.string.testing_connection))
+                        OutlinedTextField(
+                            modifier = Modifier.focusRequester(xHostRequester),
+                            value = xtreamHost,
+                            onValueChange = { xtreamHost = it },
+                            label = { Text(stringResource(id = R.string.host_url)) },
+                            placeholder = { Text(stringResource(id = R.string.example_host)) },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Next),
+                            keyboardActions = KeyboardActions(onNext = { xUserRequester.requestFocus() }),
+                        )
+                        OutlinedTextField(
+                            modifier = Modifier.focusRequester(xUserRequester),
+                            value = xtreamUsername,
+                            onValueChange = { xtreamUsername = it },
+                            label = { Text(stringResource(id = R.string.username)) },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                            keyboardActions = KeyboardActions(onNext = { xPassRequester.requestFocus() }),
+                        )
+                        OutlinedTextField(
+                            modifier = Modifier.focusRequester(xPassRequester),
+                            value = xtreamPassword,
+                            onValueChange = { xtreamPassword = it },
+                            label = { Text(stringResource(id = R.string.password)) },
+                            visualTransformation = PasswordVisualTransformation(),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+                            keyboardActions =
+                                KeyboardActions(onDone = {
+                                }),
+                        )
+                        if (xtreamHasError) {
+                            Text(
+                                stringResource(id = R.string.invalid_xtream),
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                        if (xtreamValidating) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                                Text(stringResource(id = R.string.testing_connection))
+                            }
                         }
                     }
                 }
