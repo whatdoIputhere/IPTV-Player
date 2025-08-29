@@ -7,7 +7,6 @@
     <string name="search">Search</string>
     <string name="search_categories">Search categories</string>
     <string name="search_channels">Search channels</string>
-    <string name="categories">Categories</string>
 
     <string name="no_categories_match">No categories match your search</string>
     <string name="no_channels_loaded">No channels loaded</string>
@@ -17,9 +16,9 @@
     <string name="error">Error</string>
     <string name="error_with_message">Error: %1$s</string>
 
-    <string name="loading_iptv_channels">Loading IPTV channels...</string>
-    <string name="loading_from_cache">Loading from cache...</string>
-    <string name="loading">Loading...</string>
+    <string name="loading_iptv_channels">Loading IPTV channels…</string>
+    <string name="loading_from_cache">Loading from cache…</string>
+    <string name="loading">Loading…</string>
 
     <string name="saved_playlists">Saved Playlists</string>
     <string name="back">Back</string>
@@ -31,7 +30,6 @@
 
     <string name="active">Active</string>
     <string name="set_active">Set Active</string>
-    <string name="load_now">Load now</string>
     <string name="delete">Delete</string>
 
     <string name="display_name">Display name</string>
@@ -48,8 +46,6 @@
     <string name="invalid_xtream">Could not validate Xtream credentials. Check host/username/password.</string>
     <string name="validating_m3u_url">Validating M3U URL…</string>
     <string name="testing_connection">Testing connection…</string>
-    <string name="connection_successful">Connection successful!</string>
-    <string name="connection_failed_with_message">Connection failed: %1$s</string>
 
     <string name="toggle_rotation">Toggle rotation</string>
     <string name="rotation_locked">Screen rotation locked</string>

@@ -25,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.util.UnstableApi
-import com.whatdoiputhere.iptvplayer.R
 import com.whatdoiputhere.iptvplayer.ui.screens.channelListScreen
 import com.whatdoiputhere.iptvplayer.ui.screens.videoPlayerScreen
 import com.whatdoiputhere.iptvplayer.ui.theme.iptvPlayerTheme

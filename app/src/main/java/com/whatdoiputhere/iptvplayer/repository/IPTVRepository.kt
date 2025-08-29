@@ -90,8 +90,7 @@ class IPTVRepository(
         context.getSharedPreferences("playlist_cache", Context.MODE_PRIVATE)
     private val gson = Gson()
 
-    private var _cachedChannels = MutableStateFlow<List<Channel>>(emptyList())
-    val cachedChannels: Flow<List<Channel>> = _cachedChannels.asStateFlow()
+    private var cachedChannels = MutableStateFlow<List<Channel>>(emptyList())
 
     private var memoryCache: List<Channel>? = null
     private var memoryCacheTime: Long = 0
@@ -129,7 +128,7 @@ class IPTVRepository(
                 if (!forceRefresh) {
                     val now = System.currentTimeMillis()
                     if (memoryCache != null && (now - memoryCacheTime) < memoryCacheValidityMs) {
-                        _cachedChannels.value = memoryCache!!
+                        cachedChannels.value = memoryCache!!
                         return@withContext memoryCache!!
                     }
 
@@ -137,7 +136,7 @@ class IPTVRepository(
                     if (cached.isNotEmpty()) {
                         memoryCache = cached
                         memoryCacheTime = now
-                        _cachedChannels.value = cached
+                        cachedChannels.value = cached
                         return@withContext cached
                     }
                 }
@@ -155,17 +154,17 @@ class IPTVRepository(
                     memoryCache = channels
                     memoryCacheTime = System.currentTimeMillis()
 
-                    _cachedChannels.value = channels
+                    cachedChannels.value = channels
                     channels
                 }
             } catch (e: Exception) {
                 Log.e("IPTV", "Error loading M3U playlist from $url", e)
                 val fallback = loadPlaylistFromCache("m3u_${url.trim()}")
                 if (fallback.isNotEmpty()) {
-                    _cachedChannels.value = fallback
+                    cachedChannels.value = fallback
                     return@withContext fallback
                 }
-                _cachedChannels.value
+                cachedChannels.value
             }
         }
 
@@ -199,17 +198,17 @@ class IPTVRepository(
                     if (memoryCache != null &&
                         (currentTime - memoryCacheTime) < memoryCacheValidityMs
                     ) {
-                        _cachedChannels.value = memoryCache!!
+                        cachedChannels.value = memoryCache!!
                         return@withContext memoryCache!!
                     }
 
-                    val cachedChannels =
+                    val cachedList =
                         loadPlaylistFromCache("xtream_${config.host}_${config.username}")
-                    if (cachedChannels.isNotEmpty()) {
-                        memoryCache = cachedChannels
+                    if (cachedList.isNotEmpty()) {
+                        memoryCache = cachedList
                         memoryCacheTime = currentTime
-                        _cachedChannels.value = cachedChannels
-                        return@withContext cachedChannels
+                        cachedChannels.value = cachedList
+                        return@withContext cachedList
                     }
                 }
 
@@ -262,7 +261,7 @@ class IPTVRepository(
                 memoryCache = channels
                 memoryCacheTime = currentTime
 
-                _cachedChannels.value = channels
+                cachedChannels.value = channels
 
                 channels
             } catch (e: Exception) {
@@ -272,11 +271,11 @@ class IPTVRepository(
                     e,
                 )
                 if (!forceRefresh) {
-                    val cachedChannels =
+                    val cachedList =
                         loadPlaylistFromCache("xtream_${config.host}_${config.username}")
-                    if (cachedChannels.isNotEmpty()) {
-                        _cachedChannels.value = cachedChannels
-                        cachedChannels
+                    if (cachedList.isNotEmpty()) {
+                        cachedChannels.value = cachedList
+                        cachedList
                     } else {
                         emptyList()
                     }

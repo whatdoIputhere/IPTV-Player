@@ -1,7 +1,7 @@
 package com.whatdoiputhere.iptvplayer.viewmodel
 
 import android.app.Application
-import android.net.Uri
+import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
@@ -97,7 +97,7 @@ class IPTVViewModel(
 
     private fun parseXtreamFromM3U(url: String): Triple<String, String, String>? {
         return runCatching {
-            val uri = Uri.parse(url.trim())
+            val uri = url.trim().toUri()
             val scheme = uri.scheme ?: return null
             val authority = uri.authority ?: return null
             val username =
@@ -453,112 +453,6 @@ class IPTVViewModel(
                 }.toList()
 
         _uiState.value = currentState.copy(filteredChannels = filtered)
-    }
-
-    fun addXtreamConfig(config: XtreamConfig) {
-        viewModelScope.launch {
-            try {
-                val configId = repository.saveXtreamConfig(config)
-                if (_uiState.value.xtreamConfigs.isEmpty()) {
-                    repository.setActiveXtreamConfig(configId)
-
-                    loadChannelsFromXtream(config.copy(id = configId))
-                } else {
-                    repository.setActiveXtreamConfig(configId)
-                    loadChannelsFromXtream(config.copy(id = configId))
-                }
-                val playlistId = "xtream:${config.host}:${config.username}"
-                val displayName =
-                    if (config.name.isNotBlank()) config.name else "${config.username}@${config.host}"
-                val playlist =
-                    PlaylistConfig(
-                        id = playlistId,
-                        displayName = displayName,
-                        type = "Xtream",
-                        data = gson.toJson(config.copy(id = configId)),
-                    )
-                repository.savePlaylistConfig(playlist)
-                repository.setActivePlaylist(playlistId)
-                loadSavedPlaylists()
-            } catch (e: Exception) {
-                _uiState.value =
-                    _uiState.value.copy(
-                        error = "Failed to save configuration: ${e.message}",
-                    )
-            }
-        }
-    }
-
-    fun deleteXtreamConfig() {
-        viewModelScope.launch {
-            try {
-                repository.deleteXtreamConfig()
-            } catch (e: Exception) {
-                _uiState.value =
-                    _uiState.value.copy(
-                        error = "Failed to delete configuration: ${e.message}",
-                    )
-            }
-        }
-    }
-
-    fun setActiveXtreamConfig(configId: Long) {
-        viewModelScope.launch {
-            try {
-                repository.setActiveXtreamConfig(configId)
-
-                val config = _uiState.value.xtreamConfigs.find { it.id == configId }
-                config?.let { loadChannelsFromXtream(it) }
-            } catch (e: Exception) {
-                _uiState.value =
-                    _uiState.value.copy(
-                        error = "Failed to set active configuration: ${e.message}",
-                    )
-            }
-        }
-    }
-
-    fun testXtreamConfig(config: XtreamConfig) {
-        viewModelScope.launch {
-            _uiState.value =
-                _uiState.value.copy(
-                    isTestingConnection = true,
-                    testResult = null,
-                )
-
-            try {
-                val result = repository.testXtreamConnection(config.host, config.username, config.password)
-                val testMessage =
-                    if (result.isSuccess && result.getOrNull() == true) {
-                        "✓ " + getApplication<Application>().getString(R.string.connection_successful)
-                    } else {
-                        "✗ " +
-                            getApplication<Application>()
-                                .getString(
-                                    R.string.connection_failed_with_message,
-                                    result.exceptionOrNull()?.message ?: "Unknown error",
-                                )
-                    }
-
-                _uiState.value =
-                    _uiState.value.copy(
-                        isTestingConnection = false,
-                        testResult = testMessage,
-                    )
-            } catch (e: Exception) {
-                _uiState.value =
-                    _uiState.value.copy(
-                        isTestingConnection = false,
-                        testResult =
-                            "✗ " +
-                                getApplication<Application>()
-                                    .getString(
-                                        R.string.connection_failed_with_message,
-                                        e.message ?: "Unknown error",
-                                    ),
-                    )
-            }
-        }
     }
 
     suspend fun validateXtream(
