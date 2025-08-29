@@ -91,6 +91,10 @@ class IPTVViewModel(
         setActivePlaylist(id)
     }
 
+    fun addSamplePlaylist() {
+        addM3UPlaylist(name = "Sample", url = "https://iptv-org.github.io/iptv/index.country.m3u")
+    }
+
     private fun parseXtreamFromM3U(url: String): Triple<String, String, String>? {
         return runCatching {
             val uri = Uri.parse(url.trim())

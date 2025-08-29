@@ -26,6 +26,7 @@
     <string name="add_playlist">Add Playlist</string>
     <string name="add_m3u_url">Add M3U URL</string>
     <string name="add_xtream_code">Add Xtream-Code</string>
+    <string name="add_sample_playlist">Load Sample Playlist</string>
     <string name="no_playlists_saved">No playlists saved.</string>
 
     <string name="active">Active</string>

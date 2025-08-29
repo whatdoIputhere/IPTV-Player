@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -66,6 +67,7 @@ fun savedPlaylistsScreen(
     loadingPlaylistId: String?,
     onAddXtream: (String, String, String, String) -> Unit,
     onAddM3U: (String, String) -> Unit,
+    onAddSamplePlaylist: () -> Unit,
     onValidateXtream: suspend (String, String, String) -> Boolean,
     onValidateM3U: suspend (String) -> Boolean,
     onSelectPlaylist: (String) -> Unit,
@@ -149,6 +151,16 @@ fun savedPlaylistsScreen(
                                     showXtreamDialog = true
                                 },
                             )
+                            DropdownMenuItem(
+                                text = {
+                                    Text(stringResource(id = R.string.add_sample_playlist))
+                                },
+                                onClick = {
+                                    showAddMenu = false
+                                    showXtreamDialog = false
+                                    onAddSamplePlaylist()
+                                },
+                            )
                         }
                     }
                 },
@@ -164,22 +176,16 @@ fun savedPlaylistsScreen(
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
             if (playlists.isEmpty()) {
-                Box(
+                Column(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                    ) {
-                        Text(stringResource(id = R.string.no_playlists_saved))
-                        Button(onClick = { showXtreamDialog = true }) {
-                            Text(stringResource(id = R.string.add_xtream_code))
-                        }
-                        Button(onClick = { showM3UDialog = true }) {
-                            Text(stringResource(id = R.string.add_m3u_url))
-                        }
-                    }
+                    Text(stringResource(id = R.string.no_playlists_saved))
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = { showXtreamDialog = true }) { Text(stringResource(id = R.string.add_xtream_code)) }
+                    Button(onClick = { showM3UDialog = true }) { Text(stringResource(id = R.string.add_m3u_url)) }
+                    Button(onClick = { onAddSamplePlaylist() }) { Text(stringResource(id = R.string.add_sample_playlist)) }
                 }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
