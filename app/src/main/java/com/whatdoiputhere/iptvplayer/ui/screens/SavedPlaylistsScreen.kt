@@ -1,5 +1,7 @@
 package com.whatdoiputhere.iptvplayer.ui.screens
 
+import android.content.res.Configuration
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -101,77 +104,84 @@ fun savedPlaylistsScreen(
     var m3uHasError by remember { mutableStateOf(false) }
     var m3uValidating by remember { mutableStateOf(false) }
 
+    val topbarConfig = LocalConfiguration.current
+    val isLandscape = topbarConfig.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val searchInputHeight = 58.dp
+    val topBarHeight = if (isLandscape) searchInputHeight + 16.dp else 56.dp
+
     Scaffold(
         topBar = {
-            TopAppBar(
-                modifier = Modifier.height(56.dp),
-                title = {
-                    Text(
-                        stringResource(id = R.string.saved_playlists),
-                        style = MaterialTheme.typography.titleSmall,
-                        modifier =
-                            Modifier
-                                .fillMaxHeight()
-                                .wrapContentHeight(Alignment.CenterVertically),
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(id = R.string.back),
-                        )
-                    }
-                },
-                actions = {
-                    if (!playlists.isEmpty()) {
-                        IconButton(onClick = { showAddMenu = true }) {
-                            Icon(
-                                Icons.Default.Add,
-                                contentDescription = stringResource(id = R.string.add_playlist),
-                            )
-                        }
-                        DropdownMenu(
-                            expanded = showAddMenu,
-                            onDismissRequest = { showAddMenu = false },
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(id = R.string.add_m3u_url)) },
-                                onClick = {
-                                    showAddMenu = false
-                                    showM3UDialog = true
-                                },
-                            )
-                            DropdownMenuItem(
-                                text = {
-                                    Text(stringResource(id = R.string.add_xtream_code))
-                                },
-                                onClick = {
-                                    showAddMenu = false
-                                    showXtreamDialog = true
-                                },
-                            )
-                            DropdownMenuItem(
-                                text = {
-                                    Text(stringResource(id = R.string.add_sample_playlist))
-                                },
-                                onClick = {
-                                    showAddMenu = false
-                                    showXtreamDialog = false
-                                    onAddSamplePlaylist()
-                                },
+            Box(
+                modifier =
+                    Modifier
+                        .height(topBarHeight)
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.background),
+            ) {
+                Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
+                    Box(modifier = Modifier.fillMaxHeight().padding(start = 8.dp), contentAlignment = Alignment.CenterStart) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            IconButton(onClick = onBack) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = stringResource(id = R.string.back),
+                                )
+                            }
+                            Text(
+                                stringResource(id = R.string.saved_playlists),
+                                style = MaterialTheme.typography.titleSmall,
                             )
                         }
                     }
-                },
-                colors =
-                    androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
-                        MaterialTheme.colorScheme.background,
-                        MaterialTheme.colorScheme.onBackground,
-                        MaterialTheme.colorScheme.onBackground,
-                        MaterialTheme.colorScheme.onBackground,
-                    ),
-            )
+
+                    Box(modifier = Modifier.weight(1f).fillMaxHeight().padding(horizontal = 8.dp), contentAlignment = Alignment.Center) {
+                    }
+
+                    Box(modifier = Modifier.fillMaxHeight().padding(end = 8.dp), contentAlignment = Alignment.CenterEnd) {
+                        if (!playlists.isEmpty()) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.End) {
+                                IconButton(onClick = { showAddMenu = true }) {
+                                    Icon(
+                                        Icons.Default.Add,
+                                        contentDescription = stringResource(id = R.string.add_playlist),
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = showAddMenu,
+                                    onDismissRequest = { showAddMenu = false },
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(id = R.string.add_m3u_url)) },
+                                        onClick = {
+                                            showAddMenu = false
+                                            showM3UDialog = true
+                                        },
+                                    )
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(stringResource(id = R.string.add_xtream_code))
+                                        },
+                                        onClick = {
+                                            showAddMenu = false
+                                            showXtreamDialog = true
+                                        },
+                                    )
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(stringResource(id = R.string.add_sample_playlist))
+                                        },
+                                        onClick = {
+                                            showAddMenu = false
+                                            showXtreamDialog = false
+                                            onAddSamplePlaylist()
+                                        },
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         },
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {

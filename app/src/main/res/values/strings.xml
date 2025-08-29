@@ -52,6 +52,8 @@
     <string name="connection_failed_with_message">Connection failed: %1$s</string>
 
     <string name="toggle_rotation">Toggle rotation</string>
+    <string name="rotation_locked">Screen rotation locked</string>
+    <string name="rotation_unlocked">Screen rotation unlocked</string>
     <string name="stream_unavailable_message">Stream could not be played</string>
     <string name="server_returned_http">Server returned HTTP %1$d. The stream is unavailable.</string>
 

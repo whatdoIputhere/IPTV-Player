@@ -93,7 +93,6 @@ fun channelListScreen(
 ) {
     var categorySearchQuery by rememberSaveable { mutableStateOf("") }
 
-   
     val topbarConfig = LocalConfiguration.current
     val isLandscape = topbarConfig.orientation == Configuration.ORIENTATION_LANDSCAPE
     val searchInputHeight = 58.dp
@@ -118,7 +117,6 @@ fun channelListScreen(
                         .background(MaterialTheme.colorScheme.background),
             ) {
                 Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
-                   
                     Box(modifier = Modifier.fillMaxHeight().padding(start = 8.dp), contentAlignment = Alignment.CenterStart) {
                         if (uiState.selectedCategory != null) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -144,7 +142,6 @@ fun channelListScreen(
                         }
                     }
 
-                   
                     Box(modifier = Modifier.weight(1f).fillMaxHeight().padding(horizontal = 8.dp), contentAlignment = Alignment.Center) {
                         if (isLandscape) {
                             if (uiState.selectedCategory == null) {
@@ -193,7 +190,6 @@ fun channelListScreen(
                         }
                     }
 
-                   
                     Box(modifier = Modifier.fillMaxHeight().padding(end = 8.dp), contentAlignment = Alignment.CenterEnd) {
                         if (uiState.channels.isNotEmpty()) {
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.End) {
@@ -267,6 +263,10 @@ fun channelListScreen(
                             singleLine = true,
                             maxLines = 1,
                         )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+
+                    if (isLandscape) {
                         Spacer(modifier = Modifier.height(12.dp))
                     }
 

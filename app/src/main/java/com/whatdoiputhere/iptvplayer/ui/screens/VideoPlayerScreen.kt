@@ -134,6 +134,7 @@ fun videoPlayerScreen(
     }
 
     var controlsVisible by remember { mutableStateOf(true) }
+    var rotationLocked by remember { mutableStateOf(false) }
 
     LaunchedEffect(controlsVisible) {
         if (controlsVisible) {
@@ -228,6 +229,11 @@ fun videoPlayerScreen(
                                     android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                                 }
                             activity?.requestedOrientation = newOrientation
+                            if (!rotationLocked) {
+                                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                                    activity?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                                }, 3000L)
+                            }
                             controlsVisible = false
                         },
                         colors = IconButtonDefaults.iconButtonColors(contentColor = Color.White),
@@ -235,6 +241,45 @@ fun videoPlayerScreen(
                         Icon(
                             painter = painterResource(id = R.drawable.rotate),
                             contentDescription = stringResource(id = R.string.toggle_rotation),
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
+
+                    IconButton(
+                        onClick = {
+                            val orientation = context.resources.configuration.orientation
+                            val mapped =
+                                if (orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+                                    android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                                } else {
+                                    android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                                }
+                            rotationLocked = !rotationLocked
+                            if (rotationLocked) {
+                                activity?.requestedOrientation = mapped
+                                android.widget.Toast
+                                    .makeText(
+                                        context,
+                                        context.getString(R.string.rotation_locked),
+                                        android.widget.Toast.LENGTH_SHORT,
+                                    ).show()
+                            } else {
+                                activity?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+
+                                android.widget.Toast
+                                    .makeText(
+                                        context,
+                                        context.getString(R.string.rotation_unlocked),
+                                        android.widget.Toast.LENGTH_SHORT,
+                                    ).show()
+                            }
+                            controlsVisible = false
+                        },
+                        colors = IconButtonDefaults.iconButtonColors(contentColor = Color.White),
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.rotation_lock),
+                            contentDescription = stringResource(id = R.string.rotation_locked),
                             modifier = Modifier.size(20.dp),
                         )
                     }
