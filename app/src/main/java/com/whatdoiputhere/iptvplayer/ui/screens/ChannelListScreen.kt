@@ -93,6 +93,12 @@ fun channelListScreen(
 ) {
     var categorySearchQuery by rememberSaveable { mutableStateOf("") }
 
+   
+    val topbarConfig = LocalConfiguration.current
+    val isLandscape = topbarConfig.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val searchInputHeight = 58.dp
+    val topBarHeight = if (isLandscape) searchInputHeight + 16.dp else 56.dp
+
     val lastAutoRefreshError = remember { mutableStateOf<String?>(null) }
     LaunchedEffect(uiState.error) {
         val err = uiState.error
@@ -104,73 +110,122 @@ fun channelListScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                modifier = Modifier.height(56.dp),
-                title = {
-                    Text(
-                        text = stringResource(id = R.string.app_name),
-                        style = MaterialTheme.typography.titleSmall,
-                        modifier =
-                            Modifier
-                                .fillMaxHeight()
-                                .wrapContentHeight(Alignment.CenterVertically),
-                    )
-                },
-                navigationIcon = {
-                    if (uiState.selectedCategory != null) {
-                        IconButton(
-                            onClick = {
-                                categorySearchQuery = ""
-                                onBackToCategories()
-                            },
-                        ) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(id = R.string.back),
-                            )
-                        }
-                    }
-                },
-                actions = {
-                    if (uiState.channels.isNotEmpty()) {
-                        IconButton(
-                            onClick = onRefreshPlaylist,
-                            enabled = !uiState.isLoading,
-                        ) {
-                            Icon(
-                                Icons.Default.Refresh,
-                                contentDescription =
-                                    stringResource(id = R.string.refresh_playlist),
-                                tint =
-                                    if (uiState.isLoading) {
-                                        MaterialTheme.colorScheme.onSurface
-                                            .copy(alpha = 0.5f)
-                                    } else {
-                                        MaterialTheme.colorScheme.onSurface
-                                    },
-                            )
-                        }
-                        TextButton(
-                            onClick = onShowSavedPlaylists,
-                            modifier = Modifier.height(36.dp).padding(end = 4.dp),
-                            contentPadding =
-                                PaddingValues(horizontal = 8.dp, vertical = 4.dp),
-                        ) {
+            Box(
+                modifier =
+                    Modifier
+                        .height(topBarHeight)
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.background),
+            ) {
+                Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
+                   
+                    Box(modifier = Modifier.fillMaxHeight().padding(start = 8.dp), contentAlignment = Alignment.CenterStart) {
+                        if (uiState.selectedCategory != null) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                IconButton(onClick = {
+                                    categorySearchQuery = ""
+                                    onBackToCategories()
+                                }) {
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = stringResource(id = R.string.back),
+                                    )
+                                }
+                                Text(
+                                    text = stringResource(id = R.string.app_name),
+                                    style = MaterialTheme.typography.titleSmall,
+                                )
+                            }
+                        } else {
                             Text(
-                                stringResource(id = R.string.playlists),
-                                style = MaterialTheme.typography.labelLarge,
+                                text = stringResource(id = R.string.app_name),
+                                style = MaterialTheme.typography.titleSmall,
                             )
                         }
                     }
-                },
-                colors =
-                    androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
-                        MaterialTheme.colorScheme.background,
-                        MaterialTheme.colorScheme.onBackground,
-                        MaterialTheme.colorScheme.onBackground,
-                        MaterialTheme.colorScheme.onBackground,
-                    ),
-            )
+
+                   
+                    Box(modifier = Modifier.weight(1f).fillMaxHeight().padding(horizontal = 8.dp), contentAlignment = Alignment.Center) {
+                        if (isLandscape) {
+                            if (uiState.selectedCategory == null) {
+                                OutlinedTextField(
+                                    value = categorySearchQuery,
+                                    onValueChange = { categorySearchQuery = it },
+                                    label = {
+                                        Text(
+                                            stringResource(id = R.string.search_categories),
+                                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Default.Search,
+                                            contentDescription = stringResource(id = R.string.search),
+                                        )
+                                    },
+                                    textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                                    modifier = Modifier.fillMaxWidth().height(searchInputHeight),
+                                    singleLine = true,
+                                    maxLines = 1,
+                                )
+                            } else {
+                                OutlinedTextField(
+                                    value = uiState.searchQuery,
+                                    onValueChange = onSearchQueryChange,
+                                    label = {
+                                        Text(
+                                            stringResource(id = R.string.search_channels),
+                                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Default.Search,
+                                            contentDescription = stringResource(id = R.string.search),
+                                        )
+                                    },
+                                    textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                                    modifier = Modifier.fillMaxWidth().height(searchInputHeight),
+                                    singleLine = true,
+                                    maxLines = 1,
+                                )
+                            }
+                        }
+                    }
+
+                   
+                    Box(modifier = Modifier.fillMaxHeight().padding(end = 8.dp), contentAlignment = Alignment.CenterEnd) {
+                        if (uiState.channels.isNotEmpty()) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.End) {
+                                IconButton(onClick = onRefreshPlaylist, enabled = !uiState.isLoading) {
+                                    Icon(
+                                        Icons.Default.Refresh,
+                                        contentDescription = stringResource(id = R.string.refresh_playlist),
+                                        tint =
+                                            if (uiState.isLoading) {
+                                                MaterialTheme.colorScheme.onSurface.copy(
+                                                    alpha = 0.5f,
+                                                )
+                                            } else {
+                                                MaterialTheme.colorScheme.onSurface
+                                            },
+                                    )
+                                }
+                                TextButton(
+                                    onClick = onShowSavedPlaylists,
+                                    modifier = Modifier.height(36.dp).padding(end = 4.dp),
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                                ) {
+                                    Text(
+                                        stringResource(id = R.string.playlists),
+                                        style = MaterialTheme.typography.labelLarge,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         },
     ) { innerPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
@@ -188,30 +243,32 @@ fun channelListScreen(
                     }
 
                 if (uiState.selectedCategory == null) {
-                    OutlinedTextField(
-                        value = categorySearchQuery,
-                        onValueChange = { categorySearchQuery = it },
-                        label = {
-                            Text(
-                                stringResource(id = R.string.search_categories),
-                                style =
-                                    MaterialTheme.typography.bodySmall.copy(
-                                        fontSize = 12.sp,
-                                    ),
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Default.Search,
-                                contentDescription = stringResource(id = R.string.search),
-                            )
-                        },
-                        textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 12.dp).height(58.dp),
-                        singleLine = true,
-                        maxLines = 1,
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    if (!isLandscape) {
+                        OutlinedTextField(
+                            value = categorySearchQuery,
+                            onValueChange = { categorySearchQuery = it },
+                            label = {
+                                Text(
+                                    stringResource(id = R.string.search_categories),
+                                    style =
+                                        MaterialTheme.typography.bodySmall.copy(
+                                            fontSize = 12.sp,
+                                        ),
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Default.Search,
+                                    contentDescription = stringResource(id = R.string.search),
+                                )
+                            },
+                            textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 12.dp).height(58.dp),
+                            singleLine = true,
+                            maxLines = 1,
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
 
                     val filteredCategories by
                         remember(categories, categorySearchQuery) {
@@ -238,17 +295,25 @@ fun channelListScreen(
                         )
 
                     CompositionLocalProvider(LocalOverscrollConfiguration provides null) {
+                        val config = LocalConfiguration.current
+                        val categoryColumns =
+                            if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                                GridCells.Fixed(4)
+                            } else {
+                                GridCells.Fixed(2)
+                            }
+
                         LazyVerticalGrid(
                             state = gridState,
-                            columns = GridCells.Fixed(2),
-                            modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            columns = categoryColumns,
+                            modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             items(filteredCategories, key = { it }, contentType = { "category" }) { category ->
                                 Card(
                                     modifier =
-                                        Modifier.fillMaxWidth().height(84.dp).clickable {
+                                        Modifier.fillMaxWidth().height(64.dp).clickable {
                                             onSaveScroll(
                                                 gridState.firstVisibleItemIndex,
                                                 gridState.firstVisibleItemScrollOffset,
@@ -257,19 +322,17 @@ fun channelListScreen(
                                         },
                                     colors =
                                         CardDefaults.cardColors(
-                                            containerColor =
-                                                MaterialTheme.colorScheme
-                                                    .primaryContainer,
+                                            containerColor = MaterialTheme.colorScheme.primaryContainer,
                                         ),
-                                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                                 ) {
                                     Box(
                                         contentAlignment = Alignment.Center,
-                                        modifier = Modifier.fillMaxSize().padding(6.dp),
+                                        modifier = Modifier.fillMaxSize().padding(8.dp),
                                     ) {
                                         Text(
                                             text = category,
-                                            style = MaterialTheme.typography.titleMedium,
+                                            style = MaterialTheme.typography.titleSmall,
                                             color = MaterialTheme.colorScheme.primary,
                                             textAlign = TextAlign.Center,
                                         )
@@ -292,40 +355,42 @@ fun channelListScreen(
                         }
                     }
                 } else {
-                    Row(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        OutlinedTextField(
-                            value = uiState.searchQuery,
-                            onValueChange = onSearchQueryChange,
-                            label = {
-                                Text(
-                                    stringResource(id = R.string.search_channels),
-                                    style =
-                                        MaterialTheme.typography.bodySmall.copy(
-                                            fontSize = 12.sp,
-                                        ),
-                                )
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Default.Search,
-                                    contentDescription =
-                                        stringResource(id = R.string.search),
-                                )
-                            },
-                            textStyle =
-                                MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                            modifier = Modifier.fillMaxWidth().height(58.dp),
-                            singleLine = true,
-                            maxLines = 1,
-                        )
+                    if (!isLandscape) {
+                        Row(
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            OutlinedTextField(
+                                value = uiState.searchQuery,
+                                onValueChange = onSearchQueryChange,
+                                label = {
+                                    Text(
+                                        stringResource(id = R.string.search_channels),
+                                        style =
+                                            MaterialTheme.typography.bodySmall.copy(
+                                                fontSize = 12.sp,
+                                            ),
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.Search,
+                                        contentDescription =
+                                            stringResource(id = R.string.search),
+                                    )
+                                },
+                                textStyle =
+                                    MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                                modifier = Modifier.fillMaxWidth().height(58.dp),
+                                singleLine = true,
+                                maxLines = 1,
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
                 }
             }
 
